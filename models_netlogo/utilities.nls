@@ -1,0 +1,118 @@
+to import-network
+  import-nodes
+  import-links
+end
+
+
+
+;; This procedure reads in a files that contains node-specific attributes
+;; including an unique identification number
+to import-nodes
+  ;magic values determined from the import data, used to scale the map
+  let minx 18265
+  let maxx 30163.11819
+  let miny -1592
+  let maxy 12151.42122
+  
+  let xcors []
+  let ycors []
+  ;; This opens the file, so we can use it.
+  file-open "node_data.csv"
+  ;; Read in all the data in the file
+  ;; data on the line is in this order:
+  ;; node-id, from-node,to-node,length_of_link,x,y
+  while [not file-at-end?]
+  [
+    ;; this reads a single line into a three-item list
+    let items (csv:from-row  file-read-line)
+    create-crossings 1 [
+      set shape "circle"
+      set size 2
+      set node-id item 0 items
+     
+      let x item 1 items
+      set x x - minx
+      set xcor x / 10 ; make it fit reasonably well on the screen
+      set xcors lput x xcors    
+      
+      let y item 2 items
+      set y y - miny
+      set ycor y / 10 ; make it fit reasonably well on the screen
+      set ycors lput y ycors 
+      
+    ]
+  ]
+  file-close
+  
+  
+end
+
+;; This procedure reads in a file that contains all the links
+;; The file is simply 3 columns separated by spaces.  In this
+;; example, the links are directed.  The first column contains
+;; the node-id of the node originating the link.  The second
+;; column the node-id of the node on the other end of the link.
+;; The third column is the strength of the link.
+
+to import-links
+  ;data are:
+  ;﻿Edge,JointI,JointJ,Length,CoordinateX,CoordinateY
+  ;; This opens the file, so we can use it.
+  file-open "edge_data.csv"
+  ;; Read in all the data in the file
+  while [not file-at-end?]
+  [
+    ;; this reads a single line into a three-item list
+    let items (csv:from-row  file-read-line)
+    let from_node item 1 items
+    let to_node item 2 items
+    ;let from_turtle 
+    ask one-of crossings with [node-id = from_node] [
+      create-road-with one-of crossings with[node-id = to_node] [
+      set link_length item 3 items
+        set color blue
+      ]  
+    ]
+  ]
+  file-close
+end
+
+;; Helper procedure for looking up a node by node-id.
+to-report get-node [id]
+  report one-of turtles with [node-id = id]
+end
+
+
+;=======================
+; Convenience functions
+;=======================
+
+;Sort a list of lists, on an element of a sublist
+to-report sort-with [ key lst ]
+  report sort-by [ [a b] -> (runresult key a) < (runresult key b) ] lst
+end
+
+
+; Warnings can not be supressed, and are presented in the output window.
+; Useful for things the use must know, such as conditions that should never occur, etc.
+to warning [string]
+  output-print "=================================="
+  output-print word "Warning ! " string
+  output-print "=================================="
+end
+
+; When running in verbose mode, output is generated in the output window, for nonesential information for the user
+; Useful for tracking what the model is doing, can be turned on/off
+to say [string]
+  if verbose? [
+    output-print string
+  ]
+end
+
+;debug is presented in the command output and is used for debug information, prints to the console
+;Messages that are only useful when fixing bugs
+to debug [string]
+  if debug? [
+    print string
+  ]
+end
