@@ -3,23 +3,24 @@ extensions [ csv nw ]
 
 breed [crossings crossing]
 undirected-link-breed [roads road]
-crossings-own [node-id]
 roads-own [link_length]
+
+crossings-own [node-id building-type building-height building-status]
+breed [residents resident]
+residents-own [health]
 
 globals [
   ;fun globals to track
   last_path_length_nodes
   last_path_length_distance
-
 ]
 
 to setup
   clear-all
   nw:load-graphml "data.graphml"
-
+  init-building
   ; think about separating loading of the data in a separate function  from the model reset, to avoid loading the data file every time you want to rerun the model
   reset-ticks
-
 end
 
 to reset
@@ -86,10 +87,23 @@ to test-path-finding
 
   ]
   ]
+end
 
-
-
-
+to init-building
+  ask crossings [
+    let randomizer random-float 1
+    ifelse randomizer > percentage-concrete-buildings / 100
+     [ set building-type 1 ]
+     [ set building-type 0.5]
+    let randomizer1 random-float 1
+    ifelse randomizer > 0.9
+     [set building-height 1 ]
+     [ ifelse randomizer > 0.6
+       [set building-height 0.6 ]
+       [set building-height 0.2 ]
+     ]
+    set label building-type
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -237,6 +251,21 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot last_path_length_distance"
+
+SLIDER
+85
+458
+303
+491
+percentage-concrete-buildings
+percentage-concrete-buildings
+0
+100
+70.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
