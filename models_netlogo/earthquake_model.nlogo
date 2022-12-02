@@ -127,10 +127,8 @@ to earthquake
   ]
   set min-earthquake-distance min [earthquake-distance] of crossings
   set max-earthquake-distance max [earthquake-distance] of crossings
-  ask crossings [
-   let epicenter-distance-multiplier (max-earthquake-distance - earthquake-distance) / (max-earthquake-distance - min-earthquake-distance)
-   set building-vulnerability building-type * building-height * epicenter-distance-multiplier * earthquake-magnitude
-  ]
+
+  building-vulnerability-collapse
 
   ask patches [
     set pcolor distancexy item 0 earthquake-location item 1 earthquake-location / (max-earthquake-distance / 5)
@@ -139,6 +137,51 @@ end
 
 to init-injured-residents
 
+end
+
+to building-vulnerability-collapse
+    ask crossings [
+    let epicenter-distance-multiplier (max-earthquake-distance - earthquake-distance) / (max-earthquake-distance - min-earthquake-distance)
+    set building-vulnerability building-type * building-height * epicenter-distance-multiplier * earthquake-magnitude
+
+    let collapse-probability 0.7 * building-vulnerability + 0.1
+    let high-damage-probability -0.15 * building-vulnerability + 0.3
+    let no-damage-probability -0.55 * building-vulnerability + 0.6
+    let ordering-damages ( list collapse-probability high-damage-probability no-damage-probability )
+    set ordering-damages sort ordering-damages
+
+    let randomizer random-float 1
+
+    ifelse randomizer <= item 0 ordering-damages
+    [
+      if item 0 ordering-damages = collapse-probability
+        [set building-status "collapsed"]
+      if item 0 ordering-damages = high-damage-probability
+        [set building-status "high-damage"]
+      if item 0 ordering-damages = no-damage-probability
+        [set building-status "no-damage"]
+    ]
+
+     [ifelse randomizer <= item 1 ordering-damages
+        [
+        if  item 1 ordering-damages = collapse-probability
+          [set building-status "collapsed"]
+        if  item 1 ordering-damages = high-damage-probability
+          [set building-status "high-damage"]
+        if  item 1 ordering-damages = no-damage-probability
+          [set building-status "no-damage"]
+        ]
+
+        [
+        if item 2 ordering-damages  = collapse-probability
+          [set building-status "collapsed"]
+        if item 2 ordering-damages = high-damage-probability
+          [set building-status "high-damage"]
+        if item 2 ordering-damages  = no-damage-probability
+          [set building-status "no-damage"]
+        ]
+     ]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -311,7 +354,7 @@ earthquake-magnitude
 earthquake-magnitude
 0
 1
-0.3
+0.9
 0.01
 1
 NIL
