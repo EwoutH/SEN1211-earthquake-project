@@ -5,20 +5,26 @@ breed [crossings crossing]
 undirected-link-breed [roads road]
 roads-own [link_length]
 
-crossings-own [node-id building-type building-height building-status]
+crossings-own [node-id building-type building-height building-status number-residents building-vulnerability earthquake-distance]
 breed [residents resident]
 residents-own [health]
+patches-own [earthquake-center?]
 
 globals [
   ;fun globals to track
   last_path_length_nodes
   last_path_length_distance
+  earthquake-location
+  min-earthquake-distance
+  max-earthquake-distance
 ]
 
 to setup
   clear-all
   nw:load-graphml "data.graphml"
   init-building
+  earthquake
+  init-injured-residents
   ; think about separating loading of the data in a separate function  from the model reset, to avoid loading the data file every time you want to rerun the model
   reset-ticks
 end
@@ -102,8 +108,37 @@ to init-building
        [set building-height 0.6 ]
        [set building-height 0.2 ]
      ]
-    set label building-type
+
+    ifelse building-height = 0.2
+    [ set number-residents random 5 + 1 ] ;;to-do maak de +1 +6 +11 beter
+    [ ifelse building-height = 0.6 ;;to-do fix aannamen aantal inwoners
+      [ set number-residents random 5 + 6 ]
+      [ set number-residents random 10 + 11 ]
+    ]
+    set label number-residents
   ]
+  ;; building damage komt later wel gg groetjes
+end
+
+to earthquake
+  set earthquake-location list random-pxcor random-pycor
+  ask crossings [
+    set earthquake-distance distancexy item 0 earthquake-location item 1 earthquake-location
+  ]
+  set min-earthquake-distance min [earthquake-distance] of crossings
+  set max-earthquake-distance max [earthquake-distance] of crossings
+  ask crossings [
+   let epicenter-distance-multiplier (max-earthquake-distance - earthquake-distance) / (max-earthquake-distance - min-earthquake-distance)
+   set building-vulnerability building-type * building-height * epicenter-distance-multiplier * earthquake-magnitude
+  ]
+
+  ask patches [
+    set pcolor distancexy item 0 earthquake-location item 1 earthquake-location / (max-earthquake-distance / 5)
+  ]
+end
+
+to init-injured-residents
+
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -263,6 +298,21 @@ percentage-concrete-buildings
 100
 70.0
 1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+168
+345
+348
+378
+earthquake-magnitude
+earthquake-magnitude
+0
+1
+0.3
+0.01
 1
 NIL
 HORIZONTAL
