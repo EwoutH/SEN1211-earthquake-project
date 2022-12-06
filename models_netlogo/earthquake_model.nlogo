@@ -1,5 +1,5 @@
 __includes ["utilities.nls"]
-extensions [ csv nw ]
+extensions [ csv nw rnd]
 
 breed [crossings crossing]
 undirected-link-breed [roads road]
@@ -115,7 +115,6 @@ to init-building
       [ set number-residents random 5 + 6 ]
       [ set number-residents random 10 + 11 ]
     ]
-    set label number-residents
   ]
   ;; building damage komt later wel gg groetjes
 end
@@ -140,48 +139,32 @@ to init-injured-residents
 end
 
 to building-vulnerability-collapse
-    ask crossings [
+  ask crossings [
+    ;; calculate relative distance and building vulnerability
     let epicenter-distance-multiplier (max-earthquake-distance - earthquake-distance) / (max-earthquake-distance - min-earthquake-distance)
     set building-vulnerability building-type * building-height * epicenter-distance-multiplier * earthquake-magnitude
 
+    ;; calculate probabilities
     let collapse-probability 0.7 * building-vulnerability + 0.1
     let high-damage-probability -0.15 * building-vulnerability + 0.3
     let no-damage-probability -0.55 * building-vulnerability + 0.6
-    let ordering-damages ( list collapse-probability high-damage-probability no-damage-probability )
-    set ordering-damages sort ordering-damages
 
-    let randomizer random-float 1
+    ;; create probabilities list and pick random choice from it
+    let pairs (list list "collapsed" collapse-probability list "high-damage" high-damage-probability list "no-damage" no-damage-probability)
+    print pairs
+    set building-status first rnd:weighted-one-of-list pairs [ [p] -> last p ]
 
-    ifelse randomizer <= item 0 ordering-damages
-    [
-      if item 0 ordering-damages = collapse-probability
-        [set building-status "collapsed"]
-      if item 0 ordering-damages = high-damage-probability
-        [set building-status "high-damage"]
-      if item 0 ordering-damages = no-damage-probability
-        [set building-status "no-damage"]
-    ]
-
-     [ifelse randomizer <= item 1 ordering-damages
-        [
-        if  item 1 ordering-damages = collapse-probability
-          [set building-status "collapsed"]
-        if  item 1 ordering-damages = high-damage-probability
-          [set building-status "high-damage"]
-        if  item 1 ordering-damages = no-damage-probability
-          [set building-status "no-damage"]
-        ]
-
-        [
-        if item 2 ordering-damages  = collapse-probability
-          [set building-status "collapsed"]
-        if item 2 ordering-damages = high-damage-probability
-          [set building-status "high-damage"]
-        if item 2 ordering-damages  = no-damage-probability
-          [set building-status "no-damage"]
-        ]
-     ]
+    ;; set label building-status
+    if building-status = "collapsed" [set color red set size 8]
+    if building-status = "high-damage" [set color yellow set size 8]
+    if building-status = "no-damage" [set color green set size 8]
   ]
+
+  ;; print some statistics
+  let crossings-count count crossings
+  type "collapsed " print count crossings with [building-status = "collapsed"] / crossings-count
+  type "high-damage " print count crossings with [building-status = "high-damage"] / crossings-count
+  type "no-damage " print count crossings with [building-status = "no-damage"] / crossings-count
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -234,10 +217,10 @@ debug?
 -1000
 
 BUTTON
-47
-220
-185
-253
+68
+108
+206
+141
 NIL
 test-path-finding
 NIL
@@ -268,10 +251,10 @@ NIL
 1
 
 BUTTON
-50
-159
-113
-192
+68
+64
+131
+97
 NIL
 go
 T
@@ -331,10 +314,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot last_path_length_distance"
 
 SLIDER
-85
-458
-303
-491
+63
+287
+281
+320
 percentage-concrete-buildings
 percentage-concrete-buildings
 0
@@ -346,10 +329,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-168
-345
-348
-378
+66
+246
+246
+279
 earthquake-magnitude
 earthquake-magnitude
 0
