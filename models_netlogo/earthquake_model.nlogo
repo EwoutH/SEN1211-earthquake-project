@@ -158,19 +158,24 @@ to building-vulnerability-collapse
 end
 
 to init-injured-residents
-  ask crossings with [building-status ="collapsed"] [
-    set injured-residents 0
-    let counter-residents-creation total-residents
-    while [ counter-residents-creation > 0 ]
-    [ let randomizer random-normal 0.5 0.4
-      ifelse randomizer < 0
-        [set deaths deaths + 1 ]
-        [hatch-residents 1 [ setxy xcor ycor set color blue]
-         set injured-residents injured-residents + 1]
-      set counter-residents-creation counter-residents-creation - 1
-    ]
-    print injured-residents
+  ask crossings with [building-status ="collapsed"] [create-injured-residents 0.5 0.4]
+  ask crossings with [building-status ="high-damage"] [create-injured-residents 0.9 0.4]
+end
+
+to create-injured-residents [avg std]
+  set injured-residents 0
+  let counter-residents-creation total-residents
+  while [ counter-residents-creation > 0 ]
+  [ let randomizer random-normal avg std
+    ifelse randomizer < 0
+      [set deaths deaths + 1 ]
+      [if randomizer < 1 [
+        hatch-residents 1 [ setxy xcor ycor set color blue]
+        set injured-residents injured-residents + 1
+      ]]
+    set counter-residents-creation counter-residents-creation - 1
   ]
+  ;; type "Injured: " type injured-residents type ", total: " type total-residents type ", fraction: " print injured-residents / total-residents
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -343,11 +348,44 @@ earthquake-magnitude
 earthquake-magnitude
 0
 1
-0.9
+0.3
 0.01
 1
 NIL
 HORIZONTAL
+
+MONITOR
+280
+23
+377
+68
+NIL
+count residents
+17
+1
+11
+
+MONITOR
+281
+87
+391
+132
+Collapsed buildings
+count crossings with [building-status = \"collapsed\"]
+17
+1
+11
+
+MONITOR
+284
+143
+393
+188
+Damaged buildings
+count crossings with [building-status = \"high-damage\"]
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
