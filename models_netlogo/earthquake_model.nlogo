@@ -5,7 +5,7 @@ breed [crossings crossing]
 undirected-link-breed [roads road]
 roads-own [link_length]
 
-crossings-own [node-id building-type building-height building-status number-residents building-vulnerability earthquake-distance]
+crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance]
 breed [residents resident]
 residents-own [health]
 patches-own [earthquake-center?]
@@ -17,6 +17,7 @@ globals [
   earthquake-location
   min-earthquake-distance
   max-earthquake-distance
+  deaths
 ]
 
 to setup
@@ -110,10 +111,10 @@ to init-building
      ]
 
     ifelse building-height = 0.2
-    [ set number-residents random 5 + 1 ] ;;to-do maak de +1 +6 +11 beter
+    [ set total-residents random 5 + 1 ] ;;to-do maak de +1 +6 +11 beter
     [ ifelse building-height = 0.6 ;;to-do fix aannamen aantal inwoners
-      [ set number-residents random 5 + 6 ]
-      [ set number-residents random 10 + 11 ]
+      [ set total-residents random 5 + 6 ]
+      [ set total-residents random 10 + 11 ]
     ]
   ]
   ;; building damage komt later wel gg groetjes
@@ -134,10 +135,6 @@ to earthquake
   ]
 end
 
-to init-injured-residents
-
-end
-
 to building-vulnerability-collapse
   ask crossings [
     ;; calculate relative distance and building vulnerability
@@ -151,7 +148,6 @@ to building-vulnerability-collapse
 
     ;; create probabilities list and pick random choice from it
     let pairs (list list "collapsed" collapse-probability list "high-damage" high-damage-probability list "no-damage" no-damage-probability)
-    print pairs
     set building-status first rnd:weighted-one-of-list pairs [ [p] -> last p ]
 
     ;; set label building-status
@@ -159,12 +155,22 @@ to building-vulnerability-collapse
     if building-status = "high-damage" [set color yellow set size 8]
     if building-status = "no-damage" [set color green set size 8]
   ]
+end
 
-  ;; print some statistics
-  let crossings-count count crossings
-  type "collapsed " print count crossings with [building-status = "collapsed"] / crossings-count
-  type "high-damage " print count crossings with [building-status = "high-damage"] / crossings-count
-  type "no-damage " print count crossings with [building-status = "no-damage"] / crossings-count
+to init-injured-residents
+  ask crossings with [building-status ="collapsed"] [
+    set injured-residents 0
+    let counter-residents-creation total-residents
+    while [ counter-residents-creation > 0 ]
+    [ let randomizer random-normal 0.5 0.4
+      ifelse randomizer < 0
+        [set deaths deaths + 1 ]
+        [hatch-residents 1 [ setxy xcor ycor set color blue]
+         set injured-residents injured-residents + 1]
+      set counter-residents-creation counter-residents-creation - 1
+    ]
+    print injured-residents
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
