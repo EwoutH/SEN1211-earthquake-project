@@ -2,11 +2,13 @@ __includes ["utilities.nls"]
 extensions [ csv nw rnd]
 
 breed [crossings crossing]
+breed [hospitals hospital]
+breed [residents resident]
 undirected-link-breed [roads road]
-roads-own [link_length]
 
 crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance]
-breed [residents resident]
+roads-own [link_length]
+hospitals-own [capacity]
 residents-own [health]
 patches-own [earthquake-center?]
 
@@ -23,7 +25,8 @@ globals [
 to setup
   clear-all
   nw:load-graphml "data.graphml"
-  init-building
+  init-hospital
+  init-crossing
   earthquake
   init-injured-residents
   ; think about separating loading of the data in a separate function  from the model reset, to avoid loading the data file every time you want to rerun the model
@@ -94,7 +97,18 @@ to test-path-finding
   ]
 end
 
-to init-building
+to init-hospital
+  ask n-of amount-hospitals crossings
+  [set breed hospitals
+   set shape "house"
+   set color white
+   set size 12
+   set capacity 100
+   ]
+end
+
+
+to init-crossing
   ask crossings [
     let randomizer random-float 1
     ifelse randomizer > percentage-concrete-buildings / 100
@@ -149,15 +163,16 @@ to building-vulnerability-collapse
     set building-status first rnd:weighted-one-of-list pairs [ [p] -> last p ]
 
     ;; set label building-status
-    if building-status = "collapsed" [set color red set size 8]
-    if building-status = "high-damage" [set color yellow set size 8]
-    if building-status = "no-damage" [set color green set size 8]
+    if building-status = "collapsed" [set color red set size 5]
+    if building-status = "high-damage" [set color yellow set size 5]
+    if building-status = "no-damage" [set color green set size 5]
   ]
 end
 
 to init-injured-residents
   ask crossings with [building-status ="collapsed"] [create-injured-residents 0.5 0.4]
   ask crossings with [building-status ="high-damage"] [create-injured-residents 0.9 0.4]
+  create-injured-residents-in-hospital
 end
 
 to create-injured-residents [avg std]
@@ -167,11 +182,20 @@ to create-injured-residents [avg std]
     ifelse randomizer < 0
       [set deaths deaths + 1 ]
       [if randomizer < 1 [
-        hatch-residents 1 [ setxy xcor ycor set color blue]
+        hatch-residents 1 [ setxy xcor ycor set color blue set health randomizer set size 4]
         set injured-residents injured-residents + 1
       ]]
   ]
   ;; type "Injured: " type injured-residents type ", total: " type total-residents type ", fraction: " print injured-residents / total-residents
+end
+
+to create-injured-residents-in-hospital
+ask hospitals [hatch-residents capacity * ( hospital-filling-percentage-t0 / 100 )
+    [set health random-float 1
+     setxy xcor ycor
+     set color orange
+     set size 4]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -329,7 +353,7 @@ percentage-concrete-buildings
 percentage-concrete-buildings
 0
 100
-70.0
+81.0
 1
 1
 NIL
@@ -344,7 +368,7 @@ earthquake-magnitude
 earthquake-magnitude
 0
 1
-0.3
+0.32
 0.01
 1
 NIL
@@ -382,6 +406,36 @@ count crossings with [building-status = \"high-damage\"]
 17
 1
 11
+
+SLIDER
+108
+177
+280
+210
+amount-hospitals
+amount-hospitals
+0
+30
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+159
+386
+359
+419
+hospital-filling-percentage-t0
+hospital-filling-percentage-t0
+0
+100
+60.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
