@@ -47,8 +47,6 @@ end
 
 
 to go
-
-
   test-path-finding
 
   tick
@@ -164,8 +162,7 @@ end
 
 to create-injured-residents [avg std]
   set injured-residents 0
-  let counter-residents-creation total-residents
-  while [ counter-residents-creation > 0 ]
+  foreach range total-residents
   [ let randomizer random-normal avg std
     ifelse randomizer < 0
       [set deaths deaths + 1 ]
@@ -173,7 +170,6 @@ to create-injured-residents [avg std]
         hatch-residents 1 [ setxy xcor ycor set color blue]
         set injured-residents injured-residents + 1
       ]]
-    set counter-residents-creation counter-residents-creation - 1
   ]
   ;; type "Injured: " type injured-residents type ", total: " type total-residents type ", fraction: " print injured-residents / total-residents
 end
