@@ -1,9 +1,12 @@
+;; IMPORTANT: Load "ambulance" shape from Shape Library
+
 __includes ["utilities.nls"]
 extensions [ csv nw rnd]
 
 breed [crossings crossing]
 breed [hospitals hospital]
 breed [residents resident]
+breed [ambulances ambulance]
 undirected-link-breed [roads road]
 
 crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance]
@@ -11,6 +14,7 @@ roads-own [link_length]
 hospitals-own [capacity]
 residents-own [health]
 patches-own [earthquake-center?]
+ambulances-own [destination route full?]
 
 globals [
   ;fun globals to track
@@ -29,6 +33,7 @@ to setup
   init-crossing
   earthquake
   init-injured-residents
+  init-ambulances
   ; think about separating loading of the data in a separate function  from the model reset, to avoid loading the data file every time you want to rerun the model
   reset-ticks
 end
@@ -164,7 +169,7 @@ to building-vulnerability-collapse
 
     ;; set label building-status
     if building-status = "collapsed" [set color red set size 5]
-    if building-status = "high-damage" [set color yellow set size 5]
+    if building-status = "high-damage" [set color orange set size 5]
     if building-status = "no-damage" [set color green set size 5]
   ]
 end
@@ -190,11 +195,23 @@ to create-injured-residents [avg std]
 end
 
 to create-injured-residents-in-hospital
-ask hospitals [hatch-residents capacity * ( hospital-filling-percentage-t0 / 100 )
-    [set health random-float 1
-     setxy xcor ycor
-     set color orange
-     set size 4]
+ask hospitals [
+    hatch-residents capacity * ( hospital-filling-percentage-t0 / 100 ) [
+      set health random-float 1
+      setxy xcor ycor
+      set color pink
+      set size 4
+    ]
+  ]
+end
+
+to init-ambulances
+  create-ambulances amount-ambulances [
+    move-to one-of crossings
+    set shape "ambulance"
+    set size 12
+    set color yellow
+    set full? false
   ]
 end
 @#$#@#$#@
@@ -345,10 +362,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot last_path_length_distance"
 
 SLIDER
-63
-287
-281
-320
+109
+301
+327
+334
 percentage-concrete-buildings
 percentage-concrete-buildings
 0
@@ -360,10 +377,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-66
-246
-246
-279
+106
+256
+286
+289
 earthquake-magnitude
 earthquake-magnitude
 0
@@ -408,9 +425,9 @@ count crossings with [building-status = \"high-damage\"]
 11
 
 SLIDER
-108
+54
 177
-280
+226
 210
 amount-hospitals
 amount-hospitals
@@ -431,7 +448,22 @@ hospital-filling-percentage-t0
 hospital-filling-percentage-t0
 0
 100
-60.0
+66.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+54
+217
+227
+251
+amount-ambulances
+amount-ambulances
+0
+250
+50.0
 1
 1
 NIL
@@ -483,6 +515,27 @@ airplane
 true
 0
 Polygon -7500403 true true 150 0 135 15 120 60 120 105 15 165 15 195 120 180 135 240 105 270 120 285 150 270 180 285 210 270 165 240 180 180 285 195 285 165 180 105 180 60 165 15
+
+ambulance
+false
+0
+Rectangle -7500403 true true 30 90 210 195
+Polygon -7500403 true true 296 190 296 150 259 134 244 104 210 105 210 190
+Rectangle -1 true false 195 60 195 105
+Polygon -16777216 true false 238 112 252 141 219 141 218 112
+Circle -16777216 true false 234 174 42
+Circle -16777216 true false 69 174 42
+Rectangle -1 true false 288 158 297 173
+Rectangle -1184463 true false 289 180 298 172
+Rectangle -2674135 true false 29 151 298 158
+Line -16777216 false 210 90 210 195
+Rectangle -16777216 true false 83 116 128 133
+Rectangle -16777216 true false 153 111 176 134
+Line -7500403 true 165 105 165 135
+Rectangle -7500403 true true 14 186 33 195
+Line -13345367 false 45 135 75 120
+Line -13345367 false 75 135 45 120
+Line -13345367 false 60 112 60 142
 
 arrow
 true
