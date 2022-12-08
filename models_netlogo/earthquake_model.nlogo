@@ -171,6 +171,10 @@ to building-vulnerability-collapse
     if building-status = "collapsed" [set color red set size 5]
     if building-status = "high-damage" [set color orange set size 5]
     if building-status = "no-damage" [set color green set size 5]
+
+    ;; set label building-status
+    if building-status = "collapsed" [ask my-links [if collapsed-road-blocked-chance / 100 >= random-float 1 [set color red]]]
+    if building-status = "high-damage" [ask my-links [if high-damage-road-blocked-chance / 100 >= random-float 1 [set color red]]]
   ]
 end
 
@@ -191,7 +195,6 @@ to create-injured-residents [avg std]
         set injured-residents injured-residents + 1
       ]]
   ]
-  ;; type "Injured: " type injured-residents type ", total: " type total-residents type ", fraction: " print injured-residents / total-residents
 end
 
 to create-injured-residents-in-hospital
@@ -362,25 +365,25 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot last_path_length_distance"
 
 SLIDER
-109
-301
-327
-334
+127
+354
+361
+388
 percentage-concrete-buildings
 percentage-concrete-buildings
 0
 100
-81.0
+70.0
 1
 1
-NIL
+%
 HORIZONTAL
 
 SLIDER
-106
-256
-286
-289
+125
+287
+305
+320
 earthquake-magnitude
 earthquake-magnitude
 0
@@ -440,18 +443,18 @@ NIL
 HORIZONTAL
 
 SLIDER
-159
-386
-359
-419
+127
+393
+351
+427
 hospital-filling-percentage-t0
 hospital-filling-percentage-t0
 0
 100
-66.0
+60.0
 1
 1
-NIL
+%
 HORIZONTAL
 
 SLIDER
@@ -467,6 +470,36 @@ amount-ambulances
 1
 1
 NIL
+HORIZONTAL
+
+SLIDER
+127
+477
+365
+511
+high-damage-road-blocked-chance
+high-damage-road-blocked-chance
+0
+100
+10.0
+1
+1
+%
+HORIZONTAL
+
+SLIDER
+127
+517
+364
+551
+collapsed-road-blocked-chance
+collapsed-road-blocked-chance
+0
+100
+30.0
+1
+1
+%
 HORIZONTAL
 
 @#$#@#$#@
