@@ -368,7 +368,7 @@ SLIDER
 127
 354
 361
-388
+387
 percentage-concrete-buildings
 percentage-concrete-buildings
 0
@@ -434,7 +434,7 @@ SLIDER
 210
 amount-hospitals
 amount-hospitals
-0
+1
 30
 5.0
 1
@@ -446,7 +446,7 @@ SLIDER
 127
 393
 351
-427
+426
 hospital-filling-percentage-t0
 hospital-filling-percentage-t0
 0
@@ -461,10 +461,10 @@ SLIDER
 54
 217
 227
-251
+250
 amount-ambulances
 amount-ambulances
-0
+1
 250
 50.0
 1
@@ -476,7 +476,7 @@ SLIDER
 127
 477
 365
-511
+510
 high-damage-road-blocked-chance
 high-damage-road-blocked-chance
 0
@@ -491,7 +491,7 @@ SLIDER
 127
 517
 364
-551
+550
 collapsed-road-blocked-chance
 collapsed-road-blocked-chance
 0
