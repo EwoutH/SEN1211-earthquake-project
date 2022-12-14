@@ -93,6 +93,7 @@ to create-injured-residents [avg std]
           set health randomizer
           set size 4
           set medical-treatment "none" ;; Possible: "none", "checked", "ambulance", "hospital"
+          set reported? False
         ]
         set injured-residents injured-residents + 1
       ]
@@ -108,6 +109,7 @@ ask hospitals [
       set color pink
       set size 4
       set medical-treatment "hospital"
+      set reported? True
     ]
   ]
 end
