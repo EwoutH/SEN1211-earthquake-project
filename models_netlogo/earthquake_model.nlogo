@@ -1,7 +1,7 @@
 ;; IMPORTANT: Load "ambulance" shape from Shape Library
 
 __includes ["utilities.nls"]
-extensions [ csv nw rnd]
+extensions [ csv nw rnd table]
 
 breed [crossings crossing]
 breed [hospitals hospital]
@@ -12,7 +12,7 @@ undirected-link-breed [roads road]
 crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance]
 roads-own [link_length]
 hospitals-own [capacity]
-residents-own [health]
+residents-own [health medical-treatment]
 patches-own [earthquake-center?]
 ambulances-own [destination route full?]
 
@@ -23,7 +23,9 @@ globals [
   earthquake-location
   min-earthquake-distance
   max-earthquake-distance
-  deaths
+  deaths      ;; not initialized, because 0 by default
+  recovered   ;; idem dito
+  health-table
 ]
 
 to setup
@@ -34,6 +36,7 @@ to setup
   earthquake
   init-injured-residents
   init-ambulances
+  init-health-table
   ; think about separating loading of the data in a separate function  from the model reset, to avoid loading the data file every time you want to rerun the model
   reset-ticks
 end
@@ -44,7 +47,6 @@ to reset
   ; if you modified the roads (damage from earthquake) you eitehr have to remember which node died and make sure it is reborn. Ohterwise you have to run the setup again
 
   reset-globals
-
   reset-ticks
 end
 
@@ -55,12 +57,13 @@ end
 
 
 to go
-  test-path-finding
+  update-health
+
 
   tick
   ;this resets all the memory stored by the nw extension. It remembers all network calculations and quickly uses up all memory. Not really needed for this model, remember to increase max ram in the Netlogo.cfg file if you turn this off.
   ;after ~200 random path searches Netlogo uses close to 2GB ram.
-  nw:set-context (first nw:get-context) (last nw:get-context)
+  ;nw:set-context (first nw:get-context) (last nw:get-context)
 end
 
 to test-path-finding
@@ -102,13 +105,15 @@ to test-path-finding
   ]
 end
 
+;; ##### INIT FUNCTIONS #####
+
 to init-hospital
   ask n-of amount-hospitals crossings
   [set breed hospitals
    set shape "house"
    set color white
    set size 12
-   set capacity 100
+   set capacity hospital-capacity
    ]
 end
 
@@ -190,9 +195,16 @@ to create-injured-residents [avg std]
     ifelse randomizer < 0
       [set deaths deaths + 1 ]
       [if randomizer < 1 [
-        hatch-residents 1 [ setxy xcor ycor set color blue set health randomizer set size 4]
+        hatch-residents 1 [
+          setxy xcor ycor
+          set color blue
+          set health randomizer
+          set size 4
+          set medical-treatment "none" ;; Possible: "none", "checked", "ambulance", "hospital"
+        ]
         set injured-residents injured-residents + 1
-      ]]
+      ]
+    ]
   ]
 end
 
@@ -203,6 +215,7 @@ ask hospitals [
       setxy xcor ycor
       set color pink
       set size 4
+      set medical-treatment "hospital"
     ]
   ]
 end
@@ -214,6 +227,30 @@ to init-ambulances
     set size 12
     set color yellow
     set full? false
+  ]
+end
+
+to init-health-table
+  set health-table table:make
+  table:put health-table "none" -0.005
+  table:put health-table "checked" -0.002
+  table:put health-table "ambulance" -0.001
+  table:put health-table "hospital" 0.001
+end
+
+;; ##### TICK FUNCTIONS #####
+
+to update-health
+  ask residents [
+    set health health + table:get health-table medical-treatment
+  ]
+  ask residents with [health < 0][
+    set deaths deaths + 1
+    die
+  ]
+  ask residents with [health > 1][
+    set recovered recovered + 1  ;; TODO: Note that there are already residents in hospital, those should probably not be counted
+    die
   ]
 end
 @#$#@#$#@
@@ -346,10 +383,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot last_path_length_nodes"
 
 PLOT
-1635
-305
-2096
-616
+1660
+300
+2121
+611
 last path distance
 NIL
 NIL
@@ -364,10 +401,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot last_path_length_distance"
 
 SLIDER
-127
-354
-361
-387
+56
+457
+290
+490
 percentage-concrete-buildings
 percentage-concrete-buildings
 0
@@ -379,10 +416,10 @@ percentage-concrete-buildings
 HORIZONTAL
 
 SLIDER
-125
-287
-305
-320
+50
+171
+230
+204
 earthquake-magnitude
 earthquake-magnitude
 0
@@ -427,10 +464,10 @@ count crossings with [building-status = \"high-damage\"]
 11
 
 SLIDER
-54
-177
-226
-210
+53
+245
+225
+278
 amount-hospitals
 amount-hospitals
 1
@@ -442,10 +479,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-127
-393
-351
-426
+57
+392
+281
+425
 hospital-filling-percentage-t0
 hospital-filling-percentage-t0
 0
@@ -457,10 +494,10 @@ hospital-filling-percentage-t0
 HORIZONTAL
 
 SLIDER
-54
-217
-227
-250
+53
+285
+226
+318
 amount-ambulances
 amount-ambulances
 1
@@ -472,10 +509,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-127
-477
-365
-510
+55
+524
+293
+557
 high-damage-road-blocked-chance
 high-damage-road-blocked-chance
 0
@@ -487,10 +524,10 @@ high-damage-road-blocked-chance
 HORIZONTAL
 
 SLIDER
-127
-517
-364
-550
+55
+564
+292
+597
 collapsed-road-blocked-chance
 collapsed-road-blocked-chance
 0
@@ -499,6 +536,62 @@ collapsed-road-blocked-chance
 1
 1
 %
+HORIZONTAL
+
+PLOT
+1640
+631
+2096
+820
+Recovered & deaths
+minutes
+residents
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Deaths" 1.0 0 -2674135 true "" "plot deaths"
+"Recovered" 1.0 0 -13840069 true "" "plot recovered"
+
+MONITOR
+2028
+753
+2091
+798
+NIL
+deaths
+17
+1
+11
+
+MONITOR
+2026
+703
+2093
+748
+NIL
+recovered
+17
+1
+11
+
+SLIDER
+55
+354
+227
+387
+hospital-capacity
+hospital-capacity
+10
+250
+100.0
+10
+1
+NIL
 HORIZONTAL
 
 @#$#@#$#@
