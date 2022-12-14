@@ -121,6 +121,8 @@ to init-ambulances
     set size 12
     set color yellow
     set full? false
+    set enroute? false
+    set patient nobody
   ]
 end
 

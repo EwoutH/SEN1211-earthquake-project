@@ -24,3 +24,30 @@ to call-112
     ]
   ]
 end
+
+to move-ambulances
+  ask ambulances [
+    if not enroute? [request-new-patient]
+  ]
+end
+
+to request-new-patient
+  ;; Get resident with lowest health in search radius that is reported
+  let target-patient nobody
+  ask one-of crossings-at 0 0 [
+    let potential-crossings nw:turtles-in-radius initial-ambulance-search-radius
+    type "All potential crossings: " print potential-crossings
+    set potential-crossings potential-crossings with [any? residents-here with [reported?]]
+    type "Potential crossings with reported residents: " print potential-crossings
+    let potential-patients residents-on potential-crossings
+    type "Potential patients: " print potential-patients
+    set target-patient min-one-of potential-patients with [reported?] [health]
+    type "Target patients: " print target-patient
+  ]
+  set patient target-patient
+  set enroute? True
+
+  if patient != nobody [
+    set destination one-of crossings-on patient
+  ]
+end

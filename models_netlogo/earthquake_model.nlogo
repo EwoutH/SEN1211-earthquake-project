@@ -14,7 +14,7 @@ roads-own [link_length]
 hospitals-own [capacity]
 residents-own [health medical-treatment reported?]
 patches-own [earthquake-center?]
-ambulances-own [destination route full?]
+ambulances-own [destination route full? patient enroute?]
 
 globals [
   ;fun globals to track
@@ -57,6 +57,7 @@ end
 to go
   update-health
   call-112
+  move-ambulances
   tick
   ;this resets all the memory stored by the nw extension. It remembers all network calculations and quickly uses up all memory. Not really needed for this model, remember to increase max ram in the Netlogo.cfg file if you turn this off.
   ;after ~200 random path searches Netlogo uses close to 2GB ram.
@@ -350,7 +351,7 @@ amount-ambulances
 amount-ambulances
 1
 250
-50.0
+10.0
 1
 1
 NIL
@@ -486,6 +487,21 @@ MONITOR
 17
 1
 11
+
+SLIDER
+47
+639
+262
+672
+initial-ambulance-search-radius
+initial-ambulance-search-radius
+0
+25
+5.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
