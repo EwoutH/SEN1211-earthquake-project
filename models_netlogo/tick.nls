@@ -15,8 +15,12 @@ to update-health
 end
 
 to call-112
-  ask crossings with any? residents [called-112 False] 
-  [ let randomizer random 1
-    if randomizer > chance-call-112
+  ask crossings 
+  [ if any? residents-here with [not reported?]
+    [
+    let randomizer random-float 1
+    if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents
+      [ ask residents-here [ set reported? True ] ] 
+    ]
   ]
 end
