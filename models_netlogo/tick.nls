@@ -28,6 +28,7 @@ end
 to move-ambulances
   ask ambulances [
     if not enroute? [request-new-patient]
+    
   ]
 end
 
@@ -45,9 +46,15 @@ to request-new-patient
     type "Target patients: " print target-patient
   ]
   set patient target-patient
-  set enroute? True
 
   if patient != nobody [
     set destination one-of crossings-on patient
+    type "Destination: " print destination
+    ask one-of crossings-at 0 0 [
+      let potential-route nw:path-to [destination] of myself
+      ask myself [set route potential-route]
+    ]
+    set enroute? True
+    type "Route: " print route
   ]
 end
