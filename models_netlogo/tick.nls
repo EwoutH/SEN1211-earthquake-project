@@ -1,0 +1,15 @@
+;; ##### TICK FUNCTIONS #####
+
+to update-health
+  ask residents [
+    set health health + table:get health-table medical-treatment
+  ]
+  ask residents with [health < 0][
+    set deaths deaths + 1
+    die
+  ]
+  ask residents with [health > 1][
+    set recovered recovered + 1  ;; TODO: Note that there are already residents in hospital, those should probably not be counted
+    die
+  ]
+end

@@ -1,6 +1,6 @@
 ;; IMPORTANT: Load "ambulance" shape from Shape Library
 
-__includes ["utilities.nls"]
+__includes ["utilities.nls" "init.nls" "tick.nls"]
 extensions [ csv nw rnd table]
 
 breed [crossings crossing]
@@ -50,11 +50,9 @@ to reset
   reset-ticks
 end
 
-
 to reset-globals
   ;make sure all globals that are reset when you trigger a reset, rather than a setup, which involves a clear-all
 end
-
 
 to go
   update-health
@@ -102,155 +100,6 @@ to test-path-finding
       ]]
 
   ]
-  ]
-end
-
-;; ##### INIT FUNCTIONS #####
-
-to init-hospital
-  ask n-of amount-hospitals crossings
-  [set breed hospitals
-   set shape "house"
-   set color white
-   set size 12
-   set capacity hospital-capacity
-   ]
-end
-
-
-to init-crossing
-  ask crossings [
-    let randomizer random-float 1
-    ifelse randomizer > percentage-concrete-buildings / 100
-     [ set building-type 1 ]
-     [ set building-type 0.5]
-    let randomizer1 random-float 1
-    ifelse randomizer > 0.9
-     [set building-height 1 ]
-     [ ifelse randomizer > 0.6
-       [set building-height 0.6 ]
-       [set building-height 0.2 ]
-     ]
-
-    ifelse building-height = 0.2
-    [ set total-residents random 5 + 1 ] ;;to-do maak de +1 +6 +11 beter
-    [ ifelse building-height = 0.6 ;;to-do fix aannamen aantal inwoners
-      [ set total-residents random 5 + 6 ]
-      [ set total-residents random 10 + 11 ]
-    ]
-  ]
-end
-
-to earthquake
-  set earthquake-location list random-pxcor random-pycor
-  ask crossings [
-    set earthquake-distance distancexy item 0 earthquake-location item 1 earthquake-location
-  ]
-  set min-earthquake-distance min [earthquake-distance] of crossings
-  set max-earthquake-distance max [earthquake-distance] of crossings
-
-  building-vulnerability-collapse
-
-  ask patches [
-    set pcolor distancexy item 0 earthquake-location item 1 earthquake-location / (max-earthquake-distance / 5)
-  ]
-end
-
-to building-vulnerability-collapse
-  ask crossings [
-    ;; calculate relative distance and building vulnerability
-    let epicenter-distance-multiplier (max-earthquake-distance - earthquake-distance) / (max-earthquake-distance - min-earthquake-distance)
-    set building-vulnerability building-type * building-height * epicenter-distance-multiplier * earthquake-magnitude
-
-    ;; calculate probabilities
-    let collapse-probability 0.7 * building-vulnerability + 0.1
-    let high-damage-probability -0.15 * building-vulnerability + 0.3
-    let no-damage-probability -0.55 * building-vulnerability + 0.6
-
-    ;; create probabilities list and pick random choice from it
-    let pairs (list list "collapsed" collapse-probability list "high-damage" high-damage-probability list "no-damage" no-damage-probability)
-    set building-status first rnd:weighted-one-of-list pairs [ [p] -> last p ]
-
-    ;; set label building-status
-    if building-status = "collapsed" [set color red set size 5]
-    if building-status = "high-damage" [set color orange set size 5]
-    if building-status = "no-damage" [set color green set size 5]
-
-    ;; set label building-status
-    if building-status = "collapsed" [ask my-links [if collapsed-road-blocked-chance / 100 >= random-float 1 [set color red]]]
-    if building-status = "high-damage" [ask my-links [if high-damage-road-blocked-chance / 100 >= random-float 1 [set color red]]]
-  ]
-end
-
-to init-injured-residents
-  ask crossings with [building-status ="collapsed"] [create-injured-residents 0.5 0.4]
-  ask crossings with [building-status ="high-damage"] [create-injured-residents 0.9 0.4]
-  create-injured-residents-in-hospital
-end
-
-to create-injured-residents [avg std]
-  set injured-residents 0
-  foreach range total-residents
-  [ let randomizer random-normal avg std
-    ifelse randomizer < 0
-      [set deaths deaths + 1 ]
-      [if randomizer < 1 [
-        hatch-residents 1 [
-          setxy xcor ycor
-          set color blue
-          set health randomizer
-          set size 4
-          set medical-treatment "none" ;; Possible: "none", "checked", "ambulance", "hospital"
-        ]
-        set injured-residents injured-residents + 1
-      ]
-    ]
-  ]
-end
-
-to create-injured-residents-in-hospital
-ask hospitals [
-    hatch-residents capacity * ( hospital-filling-percentage-t0 / 100 ) [
-      set health random-float 1
-      setxy xcor ycor
-      set color pink
-      set size 4
-      set medical-treatment "hospital"
-    ]
-  ]
-end
-
-to init-ambulances
-  create-ambulances amount-ambulances [
-    move-to one-of crossings
-    set shape "ambulance"
-    set size 12
-    set color yellow
-    set full? false
-  ]
-end
-
-to init-health-table
-  set health-table table:make
-  table:put health-table "none" -0.005
-  table:put health-table "checked" -0.002
-  table:put health-table "ambulance" -0.001
-  table:put health-table "hospital" 0.001
-end
-
-;; ##### TICK FUNCTIONS #####
-
-to update-health
-  ask residents [
-    set health health + table:get health-table medical-treatment
-  ]
-  ask residents with [health < 0][
-    set deaths deaths + 1
-    die
-  ]
-  ask residents with [health > 1][
-    set recovered recovered + 1  ;; TODO: Note that there are already residents in hospital, those should probably not be counted
-    die
   ]
 end
 @#$#@#$#@
