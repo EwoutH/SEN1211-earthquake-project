@@ -404,6 +404,7 @@ true
 PENS
 "Deaths" 1.0 0 -2674135 true "" "plot deaths"
 "Recovered" 1.0 0 -13840069 true "" "plot recovered"
+"Alive" 1.0 0 -13345367 true "" "plot count residents"
 
 MONITOR
 2028
@@ -445,17 +446,46 @@ HORIZONTAL
 SLIDER
 52
 208
-224
+238
 241
 probability-call-112
 probability-call-112
-1
-100
-10.0
-1
+0
+5
+1.0
+0.05
 1
 %
 HORIZONTAL
+
+PLOT
+1640
+834
+2097
+984
+% residents called in to 112
+minutes
+% called in
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot (count residents with [reported?] + deaths + recovered) / (count residents + deaths + recovered) * 100"
+
+MONITOR
+1945
+936
+2061
+981
+% residents reported
+(count residents with [reported?] + deaths + recovered) / (count residents + deaths + recovered) * 100
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
