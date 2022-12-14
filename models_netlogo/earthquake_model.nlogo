@@ -134,7 +134,6 @@ to init-crossing
       [ set total-residents random 10 + 11 ]
     ]
   ]
-  ;; building damage komt later wel gg groetjes
 end
 
 to earthquake
