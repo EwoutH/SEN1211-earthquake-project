@@ -13,3 +13,10 @@ to update-health
     die
   ]
 end
+
+to call-112
+  ask crossings with any? residents [called-112 False] 
+  [ let randomizer random 1
+    if randomizer > chance-call-112
+  ]
+end

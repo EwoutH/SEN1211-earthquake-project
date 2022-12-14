@@ -12,7 +12,7 @@ undirected-link-breed [roads road]
 crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance]
 roads-own [link_length]
 hospitals-own [capacity]
-residents-own [health medical-treatment]
+residents-own [health medical-treatment reported?]
 patches-own [earthquake-center?]
 ambulances-own [destination route full?]
 
@@ -56,8 +56,7 @@ end
 
 to go
   update-health
-
-
+  call-112
   tick
   ;this resets all the memory stored by the nw extension. It remembers all network calculations and quickly uses up all memory. Not really needed for this model, remember to increase max ram in the Netlogo.cfg file if you turn this off.
   ;after ~200 random path searches Netlogo uses close to 2GB ram.
@@ -441,6 +440,21 @@ hospital-capacity
 10
 1
 NIL
+HORIZONTAL
+
+SLIDER
+52
+208
+224
+241
+probability-call-112
+probability-call-112
+1
+100
+10.0
+1
+1
+%
 HORIZONTAL
 
 @#$#@#$#@
