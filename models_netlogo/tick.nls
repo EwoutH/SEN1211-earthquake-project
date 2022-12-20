@@ -20,7 +20,7 @@ to call-112
     [
     let randomizer random-float 1
     if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents
-      [ ask residents-here [ set reported? True ] ] 
+      [ ask residents-here [ set reported? true ] ] 
     ]
   ]
 end
@@ -29,7 +29,7 @@ to go-ambulances
   nw:set-context turtles with [part-of-network?] roads with [color != red]
   ask ambulances [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
-    if not enroute? [request-new-patient]
+    if not enroute? [request-new-patient] 
     if one-of crossings-at 0 0 = destination [pick-up-patient]  ;; TODO: write function
     if one-of hospitals-at 0 0 != 0 [drop-off-patient]          ;; TODO: write function
     if enroute? [move-ambulances]
@@ -58,11 +58,11 @@ to request-new-patient
   ask one-of crossings-at 0 0 [
     let potential-crossings nw:turtles-in-radius initial-ambulance-search-radius
     type "All potential crossings: " print potential-crossings
-    set potential-crossings potential-crossings with [any? residents-here with [reported?]]
+    set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none"]]
     type "Potential crossings with reported residents: " print potential-crossings
     let potential-patients residents-on potential-crossings
     type "Potential patients: " print potential-patients
-    set target-patient min-one-of potential-patients with [reported?] [health]
+    set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none"] [health] ;;TODO think about checked
     type "Target patients: " print target-patient
   ]
   set patient target-patient
@@ -74,15 +74,17 @@ to request-new-patient
       let potential-route nw:turtles-on-path-to [destination] of myself
       ask myself [set route potential-route]
     ]
-    set enroute? True
+    set enroute? true
     type "Route: " print route
   ]
 end
 
 to pick-up-patient
-  ;; TODO
+  ask patient
+  [set medical-treatment "ambulance"]
 end
 
 to drop-off-patient
-  ;; TODO
+  ask patient [
+    set medical-treatment "hospital"]
 end

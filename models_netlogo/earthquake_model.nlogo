@@ -94,7 +94,7 @@ to test-path-finding
     ;this gives a list of edges to get to to_c or false if none possible
     let path nw:path-to to_c
 
-    if path != False
+    if path != false
     [
       foreach path [x -> ask x [
         set color red
