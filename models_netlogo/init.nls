@@ -114,6 +114,7 @@ ask hospitals [
       set medical-treatment "hospital"
       set reported? true
     ]
+    set occupancy count residents-at 0 0
   ]
 end
 
@@ -123,7 +124,6 @@ to init-ambulances
     set shape "ambulance"
     set size 12
     set color yellow
-    set full? false
     set enroute? false
     set patient nobody
     set part-of-network? false

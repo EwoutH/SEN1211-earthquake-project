@@ -11,7 +11,7 @@ undirected-link-breed [roads road]
 
 crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance]
 roads-own [link_length]
-hospitals-own [capacity]
+hospitals-own [capacity occupancy]
 residents-own [health medical-treatment reported?]
 patches-own [earthquake-center?]
 ambulances-own [destination route full? patient enroute?]

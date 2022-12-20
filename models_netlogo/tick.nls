@@ -6,16 +6,18 @@ to update-health
   ]
   ask residents with [health < 0][
     set deaths deaths + 1
+    ;; TODO check if in ambulance, if so update ambulance
     die
   ]
   ask residents with [health > 1][
     set recovered recovered + 1  ;; TODO: Note that there are already residents in hospital, those should probably not be counted
+    ;; TODO check if in hospital, if so update hospital occupancy
     die
   ]
 end
 
 to call-112
-  ask crossings 
+  ask crossings
   [ if any? residents-here with [not reported?]
     [
     let randomizer random-float 1
@@ -30,14 +32,16 @@ to go-ambulances
   ask ambulances [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient] 
-    if one-of crossings-at 0 0 = destination [pick-up-patient]  ;; TODO: write function
-    if one-of hospitals-at 0 0 != 0 [drop-off-patient]          ;; TODO: write function
+    if one-of crossings-at 0 0 = destination [pick-up-patient]
+    if one-of hospitals-at 0 0 != nobody and patient != nobody [drop-off-patient]
     if enroute? [move-ambulances]
   ]
 end
 
 to move-ambulances
-  type "Route: " print route
+  ;; TODO: If route false, request new route and if no route possible new patient
+  ;; Also increase search radius recusively
+  type "Route (" type self type ticks type "): " print route
   let target-link road [who] of item 0 route [who] of item 1 route
   let target-color [color] of target-link
   ifelse target-color != blue and target-color != red [
@@ -46,7 +50,10 @@ to move-ambulances
   ][
     ask target-link [set color red]
     nw:set-context turtles with [part-of-network?] roads with [color != red]
-    set route nw:turtles-on-path-to destination
+    plan-route
+    if route = false [
+      request-new-patient
+    ]
 
     move-ambulances  ;; Note the recursive use of this function in the "else" branch
   ]
@@ -57,34 +64,40 @@ to request-new-patient
   let target-patient nobody
   ask one-of crossings-at 0 0 [
     let potential-crossings nw:turtles-in-radius initial-ambulance-search-radius
-    type "All potential crossings: " print potential-crossings
     set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none"]]
-    type "Potential crossings with reported residents: " print potential-crossings
     let potential-patients residents-on potential-crossings
-    type "Potential patients: " print potential-patients
     set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none"] [health] ;;TODO think about checked
-    type "Target patients: " print target-patient
   ]
   set patient target-patient
 
   if patient != nobody [
     set destination one-of crossings-on patient
-    type "Destination: " print destination
-    ask one-of crossings-at 0 0 [
-      let potential-route nw:turtles-on-path-to [destination] of myself
-      ask myself [set route potential-route]
-    ]
+    plan-route
     set enroute? true
-    type "Route: " print route
+  ]
+end
+
+to plan-route
+  ask one-of crossings-at 0 0 [
+    let potential-route nw:turtles-on-path-to [destination] of myself
+    ask myself [set route potential-route]
   ]
 end
 
 to pick-up-patient
-  ask patient
-  [set medical-treatment "ambulance"]
+  ask patient [set medical-treatment "ambulance"]
+  set destination min-one-of hospitals with [capacity > occupancy] [distance myself]
+  plan-route
+  set enroute? true
+  set full? true
 end
 
 to drop-off-patient
   ask patient [
+    move-to [destination] of myself
     set medical-treatment "hospital"]
+  ask destination [set occupancy occupancy + 1]
+  set patient nobody
+  set full? false
+  set enroute? false
 end
