@@ -63,14 +63,14 @@ to building-vulnerability-collapse
     let pairs (list list "collapsed" collapse-probability list "high-damage" high-damage-probability list "no-damage" no-damage-probability)
     set building-status first rnd:weighted-one-of-list pairs [ [p] -> last p ]
 
-    ;; set label building-status
+    ;; color buildings based on their status
     if building-status = "collapsed" [set color red set size 5]
     if building-status = "high-damage" [set color orange set size 5]
     if building-status = "no-damage" [set color green set size 5]
 
-    ;; set label building-status
-    if building-status = "collapsed" [ask my-links [if collapsed-road-blocked-chance / 100 >= random-float 1 [set color red]]]
-    if building-status = "high-damage" [ask my-links [if high-damage-road-blocked-chance / 100 >= random-float 1 [set color red]]]
+    ;; set color red
+    if building-status = "collapsed" [ask my-links [if collapsed-road-blocked-chance / 100 >= random-float 1 [set color blue]]]
+    if building-status = "high-damage" [ask my-links [if high-damage-road-blocked-chance / 100 >= random-float 1 [set color blue]]]
   ]
 end
 
