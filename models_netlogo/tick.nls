@@ -25,10 +25,30 @@ to call-112
   ]
 end
 
-to move-ambulances
+to go-ambulances
+  nw:set-context turtles with [part-of-network?] roads with [color != red]
   ask ambulances [
+    ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient]
-    
+    if one-of crossings-at 0 0 = destination [pick-up-patient]  ;; TODO: write function
+    if one-of hospitals-at 0 0 != 0 [drop-off-patient]          ;; TODO: write function
+    if enroute? [move-ambulances]
+  ]
+end
+
+to move-ambulances
+  type "Route: " print route
+  let target-link road [who] of item 0 route [who] of item 1 route
+  let target-color [color] of target-link
+  ifelse target-color != blue and target-color != red [
+    move-to item 1 route
+    set route remove-item 0 route
+  ][
+    ask target-link [set color red]
+    nw:set-context turtles with [part-of-network?] roads with [color != red]
+    set route nw:turtles-on-path-to destination
+
+    move-ambulances  ;; Note the recursive use of this function in the "else" branch
   ]
 end
 
@@ -51,10 +71,18 @@ to request-new-patient
     set destination one-of crossings-on patient
     type "Destination: " print destination
     ask one-of crossings-at 0 0 [
-      let potential-route nw:path-to [destination] of myself
+      let potential-route nw:turtles-on-path-to [destination] of myself
       ask myself [set route potential-route]
     ]
     set enroute? True
     type "Route: " print route
   ]
+end
+
+to pick-up-patient
+  ;; TODO
+end
+
+to drop-off-patient
+  ;; TODO
 end
