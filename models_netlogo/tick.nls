@@ -32,8 +32,8 @@ to go-ambulances
   ask ambulances [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient 0] 
-    if member? destination crossings-here [pick-up-patient]
-    if member? destination hospitals-here and patient != nobody [drop-off-patient]
+    if not full? and member? destination crossings-here [pick-up-patient]
+    if full? and member? destination hospitals-here and patient != nobody [drop-off-patient]
     if enroute? [move-ambulances]
   ]
 end
@@ -59,6 +59,7 @@ to request-new-patient [increased-radius]
     let potential-crossings nw:turtles-in-radius (initial-ambulance-search-radius + increased-radius)
     set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none"]]
     let potential-patients residents-on potential-crossings
+    print potential-patients
     set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none"] [health] ;;TODO think about checked
   ]
   set patient target-patient
@@ -68,6 +69,7 @@ to request-new-patient [increased-radius]
     plan-route
     set enroute? true
   ][
+    type self type " couldn't find patient, trying in radius " print initial-ambulance-search-radius + increased-radius + 3
     request-new-patient increased-radius + 3  ;; recursively increase the radius untill a patient is found
   ]
 end
@@ -87,16 +89,19 @@ to pick-up-patient
       set medical-treatment "ambulance"
       set reported? true
     ]
-    set destination min-one-of hospitals with [capacity > occupancy] [distance myself]
+    let current-crossing one-of crossings-here
+    set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
     plan-route
     set enroute? true
     set full? true
+    type self type " picked up " print patient
   ][
     request-new-patient 0
   ]
 end
 
 to drop-off-patient ;; TODO: Implement what happens if resident died in the journey
+  type self type " dropped off " print patient
   ask patient [
     move-to [destination] of myself
     set medical-treatment "hospital"]
