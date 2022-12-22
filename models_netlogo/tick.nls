@@ -32,8 +32,8 @@ to go-ambulances
   ask ambulances [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient 0] 
-    if one-of crossings-here = destination [pick-up-patient]
-    if one-of hospitals-here != nobody and patient != nobody [drop-off-patient]
+    if member? destination crossings-here [pick-up-patient]
+    if member? destination hospitals-here and patient != nobody [drop-off-patient]
     if enroute? [move-ambulances]
   ]
 end
