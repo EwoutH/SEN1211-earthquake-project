@@ -85,14 +85,23 @@ to plan-route
 end
 
 to pick-up-patient
-  ask patient [set medical-treatment "ambulance"]
-  set destination min-one-of hospitals with [capacity > occupancy] [distance myself]
-  plan-route
-  set enroute? true
-  set full? true
+  set patient min-one-of residents-here with [medical-treatment = "none"] [health]
+
+  ifelse patient != nobody [
+    ask patient [
+      set medical-treatment "ambulance"
+      set reported? true
+    ]
+    set destination min-one-of hospitals with [capacity > occupancy] [distance myself]
+    plan-route
+    set enroute? true
+    set full? true
+  ][
+    request-new-patient
+  ]
 end
 
-to drop-off-patient
+to drop-off-patient ;; TODO: Implement what happens if resident died in the journey
   ask patient [
     move-to [destination] of myself
     set medical-treatment "hospital"]
