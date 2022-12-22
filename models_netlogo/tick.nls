@@ -32,8 +32,8 @@ to go-ambulances
   ask ambulances [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient] 
-    if one-of crossings-at 0 0 = destination [pick-up-patient]
-    if one-of hospitals-at 0 0 != nobody and patient != nobody [drop-off-patient]
+    if one-of crossings-here = destination [pick-up-patient]
+    if one-of hospitals-here != nobody and patient != nobody [drop-off-patient]
     if enroute? [move-ambulances]
   ]
 end
@@ -62,7 +62,7 @@ end
 to request-new-patient
   ;; Get resident with lowest health in search radius that is reported
   let target-patient nobody
-  ask one-of crossings-at 0 0 [
+  ask one-of turtles-here with [part-of-network?] [
     let potential-crossings nw:turtles-in-radius initial-ambulance-search-radius
     set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none"]]
     let potential-patients residents-on potential-crossings
@@ -78,7 +78,7 @@ to request-new-patient
 end
 
 to plan-route
-  ask one-of crossings-at 0 0 [
+  ask one-of turtles-here with [part-of-network?] [
     let potential-route nw:turtles-on-path-to [destination] of myself
     ask myself [set route potential-route]
   ]

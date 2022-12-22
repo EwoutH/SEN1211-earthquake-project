@@ -114,7 +114,7 @@ ask hospitals [
       set medical-treatment "hospital"
       set reported? true
     ]
-    set occupancy count residents-at 0 0
+    set occupancy count residents-here
     set label-color magenta
     set label occupancy
   ]
