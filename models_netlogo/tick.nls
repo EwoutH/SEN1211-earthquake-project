@@ -31,7 +31,7 @@ to go-ambulances
   nw:set-context turtles with [part-of-network?] roads with [color != red]
   ask ambulances [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
-    if not enroute? [request-new-patient] 
+    if not enroute? [request-new-patient 0] 
     if one-of crossings-here = destination [pick-up-patient]
     if one-of hospitals-here != nobody and patient != nobody [drop-off-patient]
     if enroute? [move-ambulances]
@@ -39,9 +39,6 @@ to go-ambulances
 end
 
 to move-ambulances
-  ;; TODO: If route false, request new route and if no route possible new patient
-  ;; Also increase search radius recusively
-  type "Route (" type self type ticks type "): " print route
   let target-link road [who] of item 0 route [who] of item 1 route
   let target-color [color] of target-link
   ifelse target-color != blue and target-color != red [
@@ -51,29 +48,27 @@ to move-ambulances
     ask target-link [set color red]
     nw:set-context turtles with [part-of-network?] roads with [color != red]
     plan-route
-    if route = false [
-      request-new-patient
-    ]
-
     move-ambulances  ;; Note the recursive use of this function in the "else" branch
   ]
 end
 
-to request-new-patient
+to request-new-patient [increased-radius]
   ;; Get resident with lowest health in search radius that is reported
   let target-patient nobody
   ask one-of turtles-here with [part-of-network?] [
-    let potential-crossings nw:turtles-in-radius initial-ambulance-search-radius
+    let potential-crossings nw:turtles-in-radius (initial-ambulance-search-radius + increased-radius)
     set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none"]]
     let potential-patients residents-on potential-crossings
     set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none"] [health] ;;TODO think about checked
   ]
   set patient target-patient
 
-  if patient != nobody [
+  ifelse patient != nobody [
     set destination one-of crossings-on patient
     plan-route
     set enroute? true
+  ][
+    request-new-patient increased-radius + 3  ;; recursively increase the radius untill a patient is found
   ]
 end
 
@@ -97,7 +92,7 @@ to pick-up-patient
     set enroute? true
     set full? true
   ][
-    request-new-patient
+    request-new-patient 0
   ]
 end
 
