@@ -101,3 +101,7 @@ to drop-off-patient
   set full? false
   set enroute? false
 end
+
+to update-hospitals
+  ask hospitals [set label occupancy]
+end

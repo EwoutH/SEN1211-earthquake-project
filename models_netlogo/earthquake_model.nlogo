@@ -60,6 +60,7 @@ to go
   update-health
   call-112
   go-ambulances
+  update-hospitals
   tick
   ;this resets all the memory stored by the nw extension. It remembers all network calculations and quickly uses up all memory. Not really needed for this model, remember to increase max ram in the Netlogo.cfg file if you turn this off.
   ;after ~200 random path searches Netlogo uses close to 2GB ram.
