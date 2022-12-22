@@ -66,9 +66,9 @@ to building-vulnerability-collapse
     set building-status first rnd:weighted-one-of-list pairs [ [p] -> last p ]
 
     ;; color buildings based on their status
-    if building-status = "collapsed" [set color red set size 5]
-    if building-status = "high-damage" [set color orange set size 5]
-    if building-status = "no-damage" [set color green set size 5]
+    if building-status = "collapsed" [set color red set size 3]
+    if building-status = "high-damage" [set color orange set size 3]
+    if building-status = "no-damage" [set color green set size 3]
 
     ;; set color red
     if building-status = "collapsed" [ask my-links [if collapsed-road-blocked-chance / 100 >= random-float 1 [set color blue]]]
