@@ -9,8 +9,8 @@ to update-health
     ;; TODO check if in ambulance, if so update ambulance
     die
   ]
-  ask residents with [health > 1][
-    set recovered recovered + 1  ;; TODO: Note that there are already residents in hospital, those should probably not be counted
+  ask residents with [health > 1 and color = blue][
+    set recovered recovered + 1  
     ;; TODO check if in hospital, if so update hospital occupancy
     die
   ]
