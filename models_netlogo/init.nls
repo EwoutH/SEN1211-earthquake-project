@@ -131,6 +131,7 @@ to init-ambulances
     set full? false
     set patient nobody
     set part-of-network? false
+    set reachable-patients? true
   ]
 end
 

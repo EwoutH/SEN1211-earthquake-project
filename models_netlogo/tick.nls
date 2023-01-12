@@ -29,12 +29,12 @@ end
 
 to go-ambulances
   nw:set-context turtles with [part-of-network?] roads with [color != red]
-  ask ambulances [
+  ask ambulances with [reachable-patients?] [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient 0] 
     if not full? and member? destination crossings-here [pick-up-patient]
-    if full? and member? destination hospitals-here and patient != nobody [drop-off-patient]
-    if enroute? [move-ambulances]
+    if full? and member? destination hospitals-here [drop-off-patient]
+    if enroute? and destination != one-of crossings-here [move-ambulances]
   ]
 end
 
@@ -46,7 +46,6 @@ to move-ambulances
     set route remove-item 0 route
   ][
     ask target-link [set color red]
-    nw:set-context turtles with [part-of-network?] roads with [color != red]
     plan-route
     move-ambulances  ;; Note the recursive use of this function in the "else" branch
   ]
@@ -70,15 +69,19 @@ to request-new-patient [increased-radius]
     set enroute? true
   ][
     type self type " couldn't find patient, trying in radius " print initial-ambulance-search-radius + increased-radius + 3
-    request-new-patient increased-radius + 3  ;; recursively increase the radius untill a patient is found
+    ifelse increased-radius > 1900
+      [set reachable-patients? false]
+      [request-new-patient increased-radius + 3]  ;; recursively increase the radius untill a patient is found
   ]
 end
 
 to plan-route
+  nw:set-context turtles with [part-of-network?] roads with [color != red]
   ask one-of turtles-here with [part-of-network?] [
     let potential-route nw:turtles-on-path-to [destination] of myself
     ask myself [set route potential-route]
   ]
+  if route = false and not full? [request-new-patient 0]
 end
 
 to pick-up-patient
@@ -101,14 +104,24 @@ to pick-up-patient
 end
 
 to drop-off-patient ;; TODO: Implement what happens if resident died in the journey
-  type self type " dropped off " print patient
-  ask patient [
-    move-to [destination] of myself
-    set medical-treatment "hospital"]
-  ask destination [set occupancy occupancy + 1]
-  set patient nobody
-  set full? false
-  set enroute? false
+  ifelse patient = nobody
+  [
+    set destination nobody
+    set full? false
+    set enroute? false
+    type self print " dropped off dead patient"
+  ][
+    type self type " dropped off " print patient
+    ask patient [
+      move-to [destination] of myself
+      set medical-treatment "hospital"]
+    ask destination [set occupancy occupancy + 1]
+    set patient nobody
+
+    set destination nobody
+    set full? false
+    set enroute? false
+  ]
 end
 
 to update-hospitals
