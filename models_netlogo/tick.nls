@@ -104,6 +104,7 @@ to pick-up-patient
 end
 
 to find-hospital
+    nw:set-context turtles with [part-of-network?] roads with [color != red]
     let current-crossing one-of crossings-here
     set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
 end
