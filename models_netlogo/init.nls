@@ -1,7 +1,7 @@
 ;; ##### INIT FUNCTIONS #####
 
 to init-hospital
-  ask n-of amount-hospitals crossings
+  ask n-of amount-hospitals crossings with [count link-neighbors >= 3]
   [set breed hospitals
    set shape "house"
    set color white
@@ -123,7 +123,7 @@ end
 
 to init-ambulances
   create-ambulances amount-ambulances [
-    move-to one-of crossings
+    move-to one-of hospitals
     set shape "ambulance"
     set size 12
     set color yellow
@@ -131,6 +131,7 @@ to init-ambulances
     set full? false
     set patient nobody
     set part-of-network? false
+    set reachable-patients? true
   ]
 end
 
