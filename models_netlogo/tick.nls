@@ -82,6 +82,7 @@ to plan-route
     ask myself [set route potential-route]
   ]
   if route = false and not full? [request-new-patient 0]
+  if route = false and full? [find-hospital]
 end
 
 to pick-up-patient
@@ -92,8 +93,7 @@ to pick-up-patient
       set medical-treatment "ambulance"
       set reported? true
     ]
-    let current-crossing one-of crossings-here
-    set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
+    find-hospital
     plan-route
     set enroute? true
     set full? true
@@ -101,6 +101,11 @@ to pick-up-patient
   ][
     request-new-patient 0
   ]
+end
+
+to find-hospital
+    let current-crossing one-of crossings-here
+    set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
 end
 
 to drop-off-patient ;; TODO: Implement what happens if resident died in the journey
