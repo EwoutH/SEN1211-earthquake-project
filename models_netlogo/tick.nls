@@ -10,8 +10,8 @@ to update-health
     die
   ]
   ask residents with [health > 1 and color = blue][
-    set recovered recovered + 1  
-    ;; TODO check if in hospital, if so update hospital occupancy
+    set recovered recovered + 1
+    if medical-treatment = "hospital" [ask one-of hospitals-here [set occupancy occupancy - 1]]
     die
   ]
 end
