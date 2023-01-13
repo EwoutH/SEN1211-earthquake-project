@@ -22,7 +22,20 @@ to call-112
     [
     let randomizer random-float 1
     if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents
-      [ ask residents-here [ set reported? true ] ] 
+      [ ask one-of residents-here [ set tries-calling? true] ] 
+    ]
+  ]
+  let amount-callers count residents with [calling?]
+  ask up-to-n-of ( max-concurrent-calls - amount-callers ) residents with [tries-calling?] [
+    set calling? true
+    set tries-calling? false
+    set time-call random-poisson average-call-time  ;; TODO: Make Gamma-distribution
+  ]
+  ask residents with [calling?] [
+    set time-call time-call - 1
+    if time-call <= 0 [
+      ask residents-here [set reported? true]
+      set calling? false
     ]
   ]
 end

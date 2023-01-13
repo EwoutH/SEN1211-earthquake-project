@@ -12,7 +12,7 @@ undirected-link-breed [roads road]
 crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance]
 roads-own [link_length]
 hospitals-own [capacity occupancy]
-residents-own [health medical-treatment reported? help-underway?]
+residents-own [health medical-treatment reported? help-underway? calling? tries-calling? time-call]
 patches-own [earthquake-center?]
 ambulances-own [destination route full? patient enroute? reachable-patients?]
 turtles-own [part-of-network?]
@@ -509,14 +509,55 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-182
-728
-384
-854
+171
+794
+373
+920
 LINK COLORS\n - Green: Road is undamaged \n - Blue: Road is damaged, but unknown\n - Red: Road is damaged, and known
 11
 0.0
 1
+
+SLIDER
+45
+698
+217
+731
+max-concurrent-calls
+max-concurrent-calls
+5
+100
+50.0
+5
+1
+NIL
+HORIZONTAL
+
+SLIDER
+51
+738
+223
+771
+average-call-time
+average-call-time
+0
+15
+2.5
+0.1
+1
+min
+HORIZONTAL
+
+SWITCH
+234
+717
+337
+750
+call-limit?
+call-limit?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

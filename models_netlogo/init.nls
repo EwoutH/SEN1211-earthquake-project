@@ -98,6 +98,8 @@ to create-injured-residents [avg std]
           set reported? false
           set help-underway? false
           set part-of-network? false
+          set calling? false
+          set tries-calling? false
         ]
         set injured-residents injured-residents + 1
       ]
@@ -116,6 +118,8 @@ ask hospitals [
       set reported? true
       set help-underway? false
       set part-of-network? false
+      set calling? false
+      set tries-calling? false
     ]
     set occupancy count residents-here
     set label-color magenta
