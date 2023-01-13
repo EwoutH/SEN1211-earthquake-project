@@ -96,6 +96,7 @@ to create-injured-residents [avg std]
           set size 4
           set medical-treatment "none" ;; Possible: "none", "checked", "ambulance", "hospital"
           set reported? false
+          set help-underway? false
           set part-of-network? false
         ]
         set injured-residents injured-residents + 1
@@ -113,6 +114,7 @@ ask hospitals [
       set size 4
       set medical-treatment "hospital"
       set reported? true
+      set help-underway? false
       set part-of-network? false
     ]
     set occupancy count residents-here

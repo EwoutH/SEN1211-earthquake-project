@@ -57,14 +57,15 @@ to request-new-patient [increased-radius]
   let target-patient nobody
   ask one-of turtles-here with [part-of-network?] [
     let potential-crossings nw:turtles-in-radius (initial-ambulance-search-radius + increased-radius)
-    set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none"]]
+    set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none" and not help-underway?]]
     let potential-patients residents-on potential-crossings
-    set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none"] [health] ;;TODO think about checked
+    set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none" and not help-underway?] [health] ;;TODO think about checked
   ]
   set patient target-patient
 
   ifelse patient != nobody [
     set destination one-of crossings-on patient
+    ask patient [set help-underway? true]
     plan-route
     set enroute? true
   ][
@@ -86,7 +87,8 @@ to plan-route
 end
 
 to pick-up-patient
-  set patient min-one-of residents-here with [medical-treatment = "none"] [health]
+  if patient != nobody [ask patient [set help-underway? false]]                      ;; Make the previously targetet patient available for help again, incase (s)he doesn't get picked up
+  set patient min-one-of residents-here with [medical-treatment = "none"] [health]   ;; Pick up the most injured patient
 
   ifelse patient != nobody [
     ask patient [
