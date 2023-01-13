@@ -58,6 +58,7 @@ end
 
 to go
   update-health
+  if not any? residents with [medical-treatment = "none"] [stop]
   call-112
   go-ambulances
   update-hospitals

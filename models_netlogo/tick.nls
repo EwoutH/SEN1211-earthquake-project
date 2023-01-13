@@ -34,7 +34,8 @@ to go-ambulances
     if not enroute? [request-new-patient 0] 
     if not full? and member? destination crossings-here [pick-up-patient]
     if full? and member? destination hospitals-here [drop-off-patient]
-    if enroute? and destination != one-of crossings-here [move-ambulances]
+    if enroute? and route != false and length route >= 2 [move-ambulances]
+    if enroute? and route = false [plan-route]
   ]
 end
 
@@ -47,7 +48,7 @@ to move-ambulances
   ][
     ask target-link [set color red]
     plan-route
-    move-ambulances  ;; Note the recursive use of this function in the "else" branch
+    if route != false and length route >= 2 [move-ambulances] ;; Note the recursive use of this function in the "else" branch
   ]
 end
 
@@ -58,7 +59,6 @@ to request-new-patient [increased-radius]
     let potential-crossings nw:turtles-in-radius (initial-ambulance-search-radius + increased-radius)
     set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none"]]
     let potential-patients residents-on potential-crossings
-    print potential-patients
     set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none"] [health] ;;TODO think about checked
   ]
   set patient target-patient
