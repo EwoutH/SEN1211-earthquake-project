@@ -9,10 +9,9 @@ to update-health
     ;; TODO check if in ambulance, if so update ambulance
     die
   ]
-  ask residents with [health > 1 and color = blue][
-    set recovered recovered + 1
+  ask residents with [health > 1][
     if medical-treatment = "hospital" [ask one-of hospitals-here [set occupancy occupancy - 1]]
-    type self print "RECOVERED!!"
+    if color = blue [set recovered recovered + 1]
     die
   ]
 end
