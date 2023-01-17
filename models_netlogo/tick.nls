@@ -64,7 +64,7 @@ to go-ambulances
     if enroute? and route != false and length route >= 2 [move-ambulances]
     if enroute? and route = false [plan-route]
   ]
-  ;; ask ambulances with [not reachable-patients?] [request-new-patient 1900]
+  ask ambulances with [not reachable-patients?] [request-new-patient 300]
 end
 
 to move-ambulances
@@ -81,6 +81,7 @@ to move-ambulances
 end
 
 to request-new-patient [increased-radius]
+  if not any? residents with [medical-treatment = "none"] [die]
   ;; Get resident with lowest health in search radius that is reported
   let target-patient nobody
   ask one-of turtles-here with [part-of-network?] [
