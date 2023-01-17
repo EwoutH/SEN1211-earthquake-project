@@ -136,6 +136,8 @@ to init-ambulances
     set enroute? false
     set full? false
     set patient nobody
+    set destination nobody
+    set route false
     set part-of-network? false
     set reachable-patients? true
   ]

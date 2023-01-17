@@ -12,30 +12,44 @@ to update-health
   ask residents with [health > 1 and color = blue][
     set recovered recovered + 1
     if medical-treatment = "hospital" [ask one-of hospitals-here [set occupancy occupancy - 1]]
+    type self print "RECOVERED!!"
     die
   ]
 end
 
 to call-112
-  ask crossings
-  [ if any? residents-here with [not reported?]
-    [
-    let randomizer random-float 1
-    if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents
-      [ ask one-of residents-here [ set tries-calling? true] ] 
+  ifelse call-limit? [
+    ;; WITH a call-limit
+    ask crossings
+    [ if any? residents-here with [not reported?]
+      [
+        let randomizer random-float 1
+        if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents
+        [ ask one-of residents-here [ set tries-calling? true] ] 
+      ]
     ]
-  ]
-  let amount-callers count residents with [calling?]
-  ask up-to-n-of ( max-concurrent-calls - amount-callers ) residents with [tries-calling?] [
-    set calling? true
-    set tries-calling? false
-    set time-call random-poisson average-call-time  ;; TODO: Make Gamma-distribution
-  ]
-  ask residents with [calling?] [
-    set time-call time-call - 1
-    if time-call <= 0 [
-      ask residents-here [set reported? true]
-      set calling? false
+    let amount-callers count residents with [calling?]
+    ask up-to-n-of ( max-concurrent-calls - amount-callers ) residents with [tries-calling?] [
+      set calling? true
+      set tries-calling? false
+      set time-call random-poisson average-call-time  ;; TODO: Make Gamma-distribution
+    ]
+    ask residents with [calling?] [
+      set time-call time-call - 1
+      if time-call <= 0 [
+        ask residents-here [set reported? true]
+        set calling? false
+      ]
+    ]
+  ] [
+  ;; WITHOUT a call-limit
+    ask crossings
+    [ if any? residents-here with [not reported?]
+      [
+        let randomizer random-float 1
+        if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents
+        [ ask residents-here [ set reported? true ] ]
+      ]
     ]
   ]
 end
@@ -44,12 +58,13 @@ to go-ambulances
   nw:set-context turtles with [part-of-network?] roads with [color != red]
   ask ambulances with [reachable-patients?] [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
-    if not enroute? [request-new-patient 0] 
+    if not enroute? [request-new-patient initial-ambulance-search-radius]
     if not full? and member? destination crossings-here [pick-up-patient]
     if full? and member? destination hospitals-here [drop-off-patient]
     if enroute? and route != false and length route >= 2 [move-ambulances]
     if enroute? and route = false [plan-route]
   ]
+  ;; ask ambulances with [not reachable-patients?] [request-new-patient 1900]
 end
 
 to move-ambulances
@@ -69,7 +84,7 @@ to request-new-patient [increased-radius]
   ;; Get resident with lowest health in search radius that is reported
   let target-patient nobody
   ask one-of turtles-here with [part-of-network?] [
-    let potential-crossings nw:turtles-in-radius (initial-ambulance-search-radius + increased-radius)
+    let potential-crossings nw:turtles-in-radius increased-radius
     set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none" and not help-underway?]]
     let potential-patients residents-on potential-crossings
     set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none" and not help-underway?] [health] ;;TODO think about checked
@@ -81,21 +96,25 @@ to request-new-patient [increased-radius]
     ask patient [set help-underway? true]
     plan-route
     set enroute? true
+    set reachable-patients? true
   ][
-    type self type " couldn't find patient, trying in radius " print initial-ambulance-search-radius + increased-radius + 3
     ifelse increased-radius > 1900
       [set reachable-patients? false]
-      [request-new-patient increased-radius + 3]  ;; recursively increase the radius untill a patient is found
+      [let new-radius increased-radius * 1.2  ;; recursively increase the radius with 20% untill a patient is found
+       type self type " couldn't find patient, trying in radius " print new-radius
+       request-new-patient new-radius]  
   ]
 end
 
 to plan-route
-  nw:set-context turtles with [part-of-network?] roads with [color != red]
-  ask one-of turtles-here with [part-of-network?] [
-    let potential-route nw:turtles-on-path-to [destination] of myself
-    ask myself [set route potential-route]
+  if destination != nobody [
+    nw:set-context turtles with [part-of-network?] roads with [color != red]
+    ask one-of turtles-here with [part-of-network?] [
+      let potential-route nw:turtles-on-path-to [destination] of myself
+      ask myself [set route potential-route]
+    ]
   ]
-  if route = false and not full? [request-new-patient 0]
+  if route = false and not full? [request-new-patient initial-ambulance-search-radius]
   if route = false and full? [find-hospital]
 end
 
@@ -114,14 +133,18 @@ to pick-up-patient
     set full? true
     type self type " picked up " print patient
   ][
-    request-new-patient 0
+    request-new-patient initial-ambulance-search-radius
   ]
 end
 
 to find-hospital
-    nw:set-context turtles with [part-of-network?] roads with [color != red]
-    let current-crossing one-of crossings-here
-    set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
+  nw:set-context turtles with [part-of-network?] roads with [color != red]
+  let current-crossing one-of crossings-here
+  set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
+  if destination = nobody [
+    set route false
+    type myself print "couldn't find hospital"
+  ]
 end
 
 to drop-off-patient ;; TODO: Implement what happens if resident died in the journey
