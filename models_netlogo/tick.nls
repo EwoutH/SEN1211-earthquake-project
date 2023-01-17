@@ -58,7 +58,7 @@ to go-ambulances
   ask ambulances with [reachable-patients?] [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient initial-ambulance-search-radius]
-    if not full? and member? destination crossings-here [pick-up-patient]
+    if not full? and destination != nobody and member? destination crossings-here [pick-up-patient] 
     if full? and member? destination hospitals-here [drop-off-patient]
     if enroute? and route != false and length route >= 2 [move-ambulances]
     if enroute? and route = false [plan-route]
@@ -80,12 +80,12 @@ to move-ambulances
 end
 
 to request-new-patient [increased-radius]
-  if not any? residents with [medical-treatment = "none"] [die]
+  if not any? residents with [medical-treatment != "hospital"] [die]
   ;; Get resident with lowest health in search radius that is reported
   let target-patient nobody
   ask one-of turtles-here with [part-of-network?] [
     let potential-crossings nw:turtles-in-radius increased-radius
-    set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment = "none" and not help-underway?]]
+    set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment != "hospital" and not help-underway?]]
     let potential-patients residents-on potential-crossings
     set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none" and not help-underway?] [health] ;;TODO think about checked
   ]
@@ -121,10 +121,19 @@ end
 to pick-up-patient
   if patient != nobody [ask patient [set help-underway? false]]                      ;; Make the previously targetet patient available for help again, incase (s)he doesn't get picked up
   set patient min-one-of residents-here with [medical-treatment = "none"] [health]   ;; Pick up the most injured patient
+  
+  ask residents-here with [medical-treatment = "none"]
+    [ifelse health >= 0.5 
+      [ set medical-treatment "checked-lightly-injured"]
+      [ set medical-treatment "checked-heavily-injured"]
+    ]
+  
 
   ifelse patient != nobody [
     ask patient [
-      set medical-treatment "ambulance"
+      ifelse health >= 0.5 
+         [set medical-treatment "ambulance-lightly-injured"]
+         [set medical-treatment "ambulance-heavily-injured"]
       set reported? true
     ]
     find-hospital
@@ -143,7 +152,7 @@ to find-hospital
   set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
   if destination = nobody [
     set route false
-    type myself print "couldn't find hospital"
+    type self print "couldn't find hospital"
   ]
 end
 

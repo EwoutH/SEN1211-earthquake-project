@@ -146,7 +146,9 @@ end
 to init-health-table
   set health-table table:make
   table:put health-table "none" -0.005
-  table:put health-table "checked" -0.002
-  table:put health-table "ambulance" -0.001
+  table:put health-table "checked-heavily-injured" -0.002
+  table:put health-table "checked-lightly-injured" 0.0005
+  table:put health-table "ambulance-heavily-injured" -0.001
+  table:put health-table "ambulance-lightly-injured" 0.00075
   table:put health-table "hospital" 0.001
 end
