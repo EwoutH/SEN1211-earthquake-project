@@ -55,7 +55,7 @@ end
 
 to go-ambulances
   nw:set-context turtles with [part-of-network?] roads with [color != red]
-  ask ambulances with [reachable-patients?] [
+  ask ambulances [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient initial-ambulance-search-radius]
     if not full? and destination != nobody and member? destination crossings-here [pick-up-patient] 
@@ -63,7 +63,6 @@ to go-ambulances
     if enroute? and route != false and length route >= 2 [move-ambulances]
     if enroute? and route = false [plan-route]
   ]
-  ask ambulances with [not reachable-patients?] [request-new-patient 300]
 end
 
 to move-ambulances
@@ -96,10 +95,8 @@ to request-new-patient [increased-radius]
     ask patient [set help-underway? true]
     plan-route
     set enroute? true
-    set reachable-patients? true
   ][
-    ifelse increased-radius > 1900
-      [set reachable-patients? false]
+    if increased-radius < 1900
       [let new-radius increased-radius * 1.2  ;; recursively increase the radius with 20% untill a patient is found
        type self type " couldn't find patient, trying in radius " print new-radius
        request-new-patient new-radius]  
@@ -120,7 +117,7 @@ end
 
 to pick-up-patient
   if patient != nobody [ask patient [set help-underway? false]]                      ;; Make the previously targetet patient available for help again, incase (s)he doesn't get picked up
-  set patient min-one-of residents-here with [medical-treatment = "none"] [health]   ;; Pick up the most injured patient
+  set patient min-one-of residents-here with [medical-treatment != "ambulance-heavily-injured " and medical-treatment != "ambulance-lightly-injured" and medical-treatment != "hospital"] [health]   ;; Pick up the most injured patient
   
   ask residents-here with [medical-treatment = "none"]
     [ifelse health >= 0.5 
@@ -170,7 +167,6 @@ to drop-off-patient ;; TODO: Implement what happens if resident died in the jour
       set medical-treatment "hospital"]
     ask destination [set occupancy occupancy + 1]
     set patient nobody
-
     set destination nobody
     set full? false
     set enroute? false
