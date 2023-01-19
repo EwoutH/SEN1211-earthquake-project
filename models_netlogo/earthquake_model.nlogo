@@ -67,50 +67,11 @@ to go
   ;after ~200 random path searches Netlogo uses close to 2GB ram.
   ;nw:set-context (first nw:get-context) (last nw:get-context)
 end
-
-to test-path-finding
-  ;this resets all the memory stored by the nw extension. It remembers all network calculations and quickly uses up all memory. Not really needed for this model, remember to increase max ram in the Netlogo.cfg file if you turn this off.
-  ;after ~200 random path searches Netlogo uses close to 2GB ram.
-  nw:set-context (first nw:get-context) (last nw:get-context)
-
-  ;reset globals
-  set last_path_length_distance 0
-  set last_path_length_nodes 0
-
-  ask roads [ set color blue]
-  let from_c one-of crossings
-  let to_c one-of crossings
-
-  ask from_c [
-    set color red
-    set size 20
-  ]
-  ask to_c [
-    set color green
-    set size 20
-  ]
-
-  ask from_c[
-    set last_path_length_nodes nw:distance-to to_c
-
-    ;this gives a list of edges to get to to_c or false if none possible
-    let path nw:path-to to_c
-
-    if path != false
-    [
-      foreach path [x -> ask x [
-        set color red
-        set last_path_length_distance last_path_length_distance + link_length
-      ]]
-
-  ]
-  ]
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
-400
+335
 10
-1609
+1544
 1420
 -1
 -1
@@ -157,27 +118,10 @@ debug?
 -1000
 
 BUTTON
-68
-108
-206
-141
-NIL
-test-path-finding
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-66
-24
-133
-57
+4
+17
+71
+50
 NIL
 setup
 NIL
@@ -191,10 +135,10 @@ NIL
 1
 
 BUTTON
-68
-64
-131
-97
+4
+57
+67
+90
 NIL
 go
 T
@@ -218,10 +162,10 @@ Turn off \"videw updates\" to greatly increase model speed
 1
 
 PLOT
-1631
-10
-2094
-276
+1550
+26
+2013
+292
 latst path node length
 NIL
 NIL
@@ -236,10 +180,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot last_path_length_nodes"
 
 PLOT
-1660
-300
-2121
-611
+1549
+296
+2010
+607
 last path distance
 NIL
 NIL
@@ -254,10 +198,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot last_path_length_distance"
 
 SLIDER
-56
-457
-290
-490
+8
+451
+213
+484
 percentage-concrete-buildings
 percentage-concrete-buildings
 0
@@ -269,10 +213,10 @@ percentage-concrete-buildings
 HORIZONTAL
 
 SLIDER
-50
-171
-230
-204
+6
+145
+213
+178
 earthquake-magnitude
 earthquake-magnitude
 0
@@ -284,10 +228,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-280
-23
-377
-68
+218
+10
+326
+55
 NIL
 count residents
 17
@@ -295,10 +239,10 @@ count residents
 11
 
 MONITOR
-281
-87
-391
-132
+219
+62
+326
+107
 Collapsed buildings
 count crossings with [building-status = \"collapsed\"]
 17
@@ -306,10 +250,10 @@ count crossings with [building-status = \"collapsed\"]
 11
 
 MONITOR
-284
-143
-393
-188
+218
+116
+327
+161
 Damaged buildings
 count crossings with [building-status = \"high-damage\"]
 17
@@ -317,10 +261,10 @@ count crossings with [building-status = \"high-damage\"]
 11
 
 SLIDER
-53
-245
-225
-278
+8
+287
+213
+320
 amount-hospitals
 amount-hospitals
 1
@@ -332,10 +276,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-57
-392
-281
-425
+7
+363
+212
+396
 hospital-filling-percentage-t0
 hospital-filling-percentage-t0
 0
@@ -347,10 +291,10 @@ hospital-filling-percentage-t0
 HORIZONTAL
 
 SLIDER
-53
-285
-226
-318
+6
+248
+212
+281
 amount-ambulances
 amount-ambulances
 1
@@ -362,10 +306,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-55
-524
-293
-557
+10
+507
+217
+540
 high-damage-road-blocked-chance
 high-damage-road-blocked-chance
 0
@@ -377,10 +321,10 @@ high-damage-road-blocked-chance
 HORIZONTAL
 
 SLIDER
-55
-564
-292
-597
+10
+548
+217
+581
 collapsed-road-blocked-chance
 collapsed-road-blocked-chance
 0
@@ -392,10 +336,10 @@ collapsed-road-blocked-chance
 HORIZONTAL
 
 PLOT
-1640
-631
-2096
-820
+1549
+613
+2005
+802
 Recovered & deaths
 minutes
 residents
@@ -412,10 +356,10 @@ PENS
 "Alive" 1.0 0 -13345367 true "" "plot count residents"
 
 MONITOR
-2028
-753
-2091
-798
+216
+221
+331
+266
 NIL
 deaths
 17
@@ -423,10 +367,10 @@ deaths
 11
 
 MONITOR
-2026
-703
-2093
-748
+219
+166
+328
+211
 NIL
 recovered
 17
@@ -434,10 +378,10 @@ recovered
 11
 
 SLIDER
-55
-354
-227
-387
+7
+324
+213
+357
 hospital-capacity
 hospital-capacity
 10
@@ -449,9 +393,9 @@ NIL
 HORIZONTAL
 
 SLIDER
-52
+7
 208
-238
+212
 241
 probability-call-112
 probability-call-112
@@ -464,10 +408,10 @@ probability-call-112
 HORIZONTAL
 
 PLOT
-1640
-834
-2097
-984
+1550
+814
+2007
+964
 % residents called in to 112
 minutes
 % called in
@@ -482,21 +426,21 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot (count residents with [reported?] + deaths + recovered) / (count residents + deaths + recovered) * 100"
 
 MONITOR
-1945
-936
-2061
-981
+215
+275
+333
+320
 % residents reported
 (count residents with [reported?] + deaths + recovered) / (count residents + deaths + recovered) * 100
-17
+4
 1
 11
 
 SLIDER
-47
-639
-262
-672
+6
+400
+215
+433
 initial-ambulance-search-radius
 initial-ambulance-search-radius
 0
@@ -508,20 +452,20 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-171
-794
-373
-920
+14
+698
+216
+824
 LINK COLORS\n - Green: Road is undamaged \n - Blue: Road is damaged, but unknown\n - Red: Road is damaged, and known
 11
 0.0
 1
 
 SLIDER
-45
-698
-217
-731
+9
+602
+218
+635
 max-concurrent-calls
 max-concurrent-calls
 5
@@ -533,10 +477,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-51
-738
-223
-771
+12
+646
+218
+679
 average-call-time
 average-call-time
 0
@@ -548,15 +492,32 @@ min
 HORIZONTAL
 
 SWITCH
-234
-717
-337
-750
+4
+99
+107
+132
 call-limit?
 call-limit?
 0
 1
 -1000
+
+BUTTON
+75
+57
+150
+90
+go 1 tick
+go 
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
