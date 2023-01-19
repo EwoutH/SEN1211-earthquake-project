@@ -30,8 +30,14 @@ globals [
 ]
 
 to setup
-  clear-all
-  nw:load-graphml "data.graphml"
+  clear-globals
+  clear-patches
+  clear-drawing
+  clear-all-plots
+  clear-output
+  ask residents [die]
+  ask ambulances [die]
+  ask hospitals [change-to-crossing]
   init-hospital
   init-crossing
   ask roads [set color green]
@@ -39,21 +45,13 @@ to setup
   init-injured-residents
   init-ambulances
   init-health-table
-  ; think about separating loading of the data in a separate function  from the model reset, to avoid loading the data file every time you want to rerun the model
   reset-ticks
 end
 
-to reset
-  ; this resets the simulation to beginning state, but does not reaload data or make new crossings and roads
-  ; this is *much* faster than reloading the data, and recreating all nodes and edges of the graph.
-  ; if you modified the roads (damage from earthquake) you eitehr have to remember which node died and make sure it is reborn. Ohterwise you have to run the setup again
-
-  reset-globals
-  reset-ticks
-end
-
-to reset-globals
-  ;make sure all globals that are reset when you trigger a reset, rather than a setup, which involves a clear-all
+to load-network
+  clear-all
+  nw:load-graphml "data.graphml"
+  setup
 end
 
 to go
@@ -63,9 +61,20 @@ to go
   update-hospitals
   if not any? residents [stop]
   tick
-  ;this resets all the memory stored by the nw extension. It remembers all network calculations and quickly uses up all memory. Not really needed for this model, remember to increase max ram in the Netlogo.cfg file if you turn this off.
-  ;after ~200 random path searches Netlogo uses close to 2GB ram.
-  ;nw:set-context (first nw:get-context) (last nw:get-context)
+end
+
+to change-to-crossing
+  set breed crossings
+  set label ""
+  set building-type 0
+  set building-height 0
+  set building-status 0
+  set total-residents 0
+  set injured-residents 0
+  set building-vulnerability 0
+  set earthquake-distance 0
+  set shape "circle"
+  set color random 120
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -509,6 +518,23 @@ BUTTON
 90
 go 1 tick
 go 
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+77
+16
+150
+49
+NIL
+load-network
 NIL
 1
 T
