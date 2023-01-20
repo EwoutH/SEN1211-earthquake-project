@@ -10,8 +10,11 @@ to update-health
     die
   ]
   ask residents with [health > 1][
-    if medical-treatment = "hospital" [ask one-of hospitals-here [set occupancy occupancy - 1]]
-    if color = blue [set recovered recovered + 1]
+    ifelse medical-treatment = "hospital" [
+      ask one-of hospitals-here [set occupancy occupancy - 1]
+      if color = blue [set recovered-hospital recovered-hospital + 1]]
+    [set recovered-outside-hospital recovered-outside-hospital + 1]
+
     die
   ]
 end

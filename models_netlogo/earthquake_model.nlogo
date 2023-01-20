@@ -27,7 +27,8 @@ globals [
   min-earthquake-distance
   max-earthquake-distance
   deaths      ;; not initialized, because 0 by default
-  recovered   ;; idem dito
+  recovered-hospital   ;; idem dito
+  recovered-outside-hospital
   health-table
 ]
 
@@ -232,10 +233,10 @@ percentage-concrete-buildings
 HORIZONTAL
 
 SLIDER
-6
-145
-213
-178
+7
+162
+214
+195
 earthquake-magnitude
 earthquake-magnitude
 0
@@ -259,9 +260,9 @@ count residents
 
 MONITOR
 219
-62
-326
-107
+183
+330
+228
 Collapsed buildings
 count crossings with [building-status = \"collapsed\"]
 17
@@ -270,9 +271,9 @@ count crossings with [building-status = \"collapsed\"]
 
 MONITOR
 218
-116
-327
-161
+233
+329
+278
 Damaged buildings
 count crossings with [building-status = \"high-damage\"]
 17
@@ -371,14 +372,15 @@ true
 "" ""
 PENS
 "Deaths" 1.0 0 -2674135 true "" "plot deaths"
-"Recovered" 1.0 0 -13840069 true "" "plot recovered"
+"Recovered Hospital" 1.0 0 -13840069 true "" "plot recovered-hospital"
 "Alive" 1.0 0 -13345367 true "" "plot count residents"
+"Recovered outside hospital" 1.0 0 -955883 true "" "plot recovered-outside-hospital"
 
 MONITOR
-216
-221
-331
-266
+217
+352
+332
+397
 NIL
 deaths
 17
@@ -387,11 +389,11 @@ deaths
 
 MONITOR
 219
-166
-328
-211
+63
+326
+108
 NIL
-recovered
+recovered-hospital
 17
 1
 11
@@ -442,15 +444,15 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot (count residents with [reported?] + deaths + recovered) / (count residents + deaths + recovered) * 100"
+"default" 1.0 0 -16777216 true "" "plot (count residents with [reported?] + deaths + (recovered-hospital + recovered-outside-hospital)) / (count residents + deaths + (recovered-hospital + recovered-outside-hospital)) * 100"
 
 MONITOR
-215
-275
+217
+302
 333
-320
+347
 % residents reported
-(count residents with [reported?] + deaths + recovered) / (count residents + deaths + recovered) * 100
+(count residents with [reported?] + deaths + (recovered-hospital + recovered-outside-hospital)) / (count residents + deaths + (recovered-hospital + recovered-outside-hospital)) * 100
 4
 1
 11
@@ -614,6 +616,17 @@ drone-range
 1
 min
 HORIZONTAL
+
+MONITOR
+183
+113
+331
+158
+NIL
+recovered-outside-hospital
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
