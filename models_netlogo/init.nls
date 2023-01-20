@@ -139,7 +139,6 @@ to init-ambulances
     set destination nobody
     set route false
     set part-of-network? false
-    set reachable-patients? true
   ]
 end
 
