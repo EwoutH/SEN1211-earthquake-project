@@ -30,14 +30,7 @@ globals [
 ]
 
 to setup
-  clear-globals
-  clear-patches
-  clear-drawing
-  clear-all-plots
-  clear-output
-  ask residents [die]
-  ask ambulances [die]
-  ask hospitals [change-to-crossing]
+  clear-network
   init-hospital
   init-crossing
   ask roads [set color green]
@@ -46,6 +39,17 @@ to setup
   init-ambulances
   init-health-table
   reset-ticks
+end
+
+to clear-network
+  clear-globals
+  clear-patches
+  clear-drawing
+  clear-all-plots
+  clear-output
+  ask residents [die]
+  ask ambulances [die]
+  ask hospitals [change-to-crossing]
 end
 
 to load-network
@@ -73,6 +77,7 @@ to change-to-crossing
   set injured-residents 0
   set building-vulnerability 0
   set earthquake-distance 0
+  set size 3
   set shape "circle"
   set color random 120
 end
