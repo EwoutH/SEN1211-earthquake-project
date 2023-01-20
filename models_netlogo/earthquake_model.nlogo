@@ -14,7 +14,7 @@ roads-own [link_length]
 hospitals-own [capacity occupancy]
 residents-own [health medical-treatment reported? help-underway? calling? tries-calling? time-call]
 patches-own [earthquake-center?]
-ambulances-own [destination route full? patient enroute?]
+ambulances-own [destination route full? patient enroute? find-counter]
 turtles-own [part-of-network?]
 
 globals [

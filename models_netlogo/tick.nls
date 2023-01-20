@@ -96,10 +96,15 @@ to request-new-patient [increased-radius]
     plan-route
     set enroute? true
   ][
-    if increased-radius < 1900
-      [let new-radius increased-radius * 1.2  ;; recursively increase the radius with 20% untill a patient is found
-       type self type " couldn't find patient, trying in radius " print new-radius
-       request-new-patient new-radius]  
+    ifelse increased-radius < 1900
+      [let new-radius increased-radius * 1.5  ;; recursively increase the radius with 20% untill a patient is found
+       ;; type self type " couldn't find patient, trying in radius " print new-radius
+       request-new-patient new-radius]
+      [if ticks > 100 [
+        set find-counter find-counter + 1
+        if find-counter > 5 [type "Couldn't find anyone, killing " print self die
+      ]
+    ]
   ]
 end
 
