@@ -14,6 +14,7 @@ end
 to init-crossing
   ask crossings [
     set part-of-network? true
+    set spotted? false
     let randomizer random-float 1
     ifelse randomizer > percentage-concrete-buildings / 100
      [ set building-type 1 ]
@@ -139,6 +140,16 @@ to init-ambulances
     set destination nobody
     set route false
     set part-of-network? false
+  ]
+end
+
+to init-drones
+  create-drones amount-drones [
+    move-to one-of hospitals
+    set part-of-network? false
+    set shape "airplane 2"
+    set size 12
+    set color cyan
   ]
 end
 

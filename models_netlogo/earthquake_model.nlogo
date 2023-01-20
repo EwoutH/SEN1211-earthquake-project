@@ -7,15 +7,17 @@ breed [crossings crossing]
 breed [hospitals hospital]
 breed [residents resident]
 breed [ambulances ambulance]
+breed [drones drone]
 undirected-link-breed [roads road]
 
-crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance]
+crossings-own [node-id building-type building-height building-status total-residents injured-residents building-vulnerability earthquake-distance spotted?]
 roads-own [link_length]
 hospitals-own [capacity occupancy]
 residents-own [health medical-treatment reported? help-underway? calling? tries-calling? time-call]
 patches-own [earthquake-center?]
 ambulances-own [destination route full? patient enroute? find-counter]
 turtles-own [part-of-network?]
+drones-own [speed flying-range]
 
 globals [
   ;fun globals to track
@@ -38,6 +40,7 @@ to setup
   init-injured-residents
   init-ambulances
   init-health-table
+  init-drones
   reset-ticks
 end
 
@@ -49,6 +52,7 @@ to clear-network
   clear-output
   ask residents [die]
   ask ambulances [die]
+  ask drones [die]
   ask hospitals [change-to-crossing]
 end
 
@@ -61,6 +65,7 @@ end
 to go
   update-health
   call-112
+  fly-drones
   go-ambulances
   update-hospitals
   if not any? residents [stop]
@@ -469,7 +474,7 @@ TEXTBOX
 14
 698
 216
-824
+759
 LINK COLORS\n - Green: Road is undamaged \n - Blue: Road is damaged, but unknown\n - Red: Road is damaged, and known
 11
 0.0
@@ -550,6 +555,66 @@ NIL
 NIL
 1
 
+SLIDER
+13
+774
+185
+807
+amount-drones
+amount-drones
+0
+25
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+14
+813
+186
+846
+drone-speed
+drone-speed
+0
+1
+0.5
+0.05
+1
+*10 m/s
+HORIZONTAL
+
+SLIDER
+15
+851
+201
+884
+drone-view-radius
+drone-view-radius
+0
+100
+25.0
+1
+1
+*10 m
+HORIZONTAL
+
+SLIDER
+15
+889
+178
+922
+drone-range
+drone-range
+0
+90
+45.0
+1
+1
+min
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -596,6 +661,13 @@ airplane
 true
 0
 Polygon -7500403 true true 150 0 135 15 120 60 120 105 15 165 15 195 120 180 135 240 105 270 120 285 150 270 180 285 210 270 165 240 180 180 285 195 285 165 180 105 180 60 165 15
+
+airplane 2
+true
+0
+Polygon -7500403 true true 150 26 135 30 120 60 120 90 18 105 15 135 120 150 120 165 135 210 135 225 150 285 165 225 165 210 180 165 180 150 285 135 282 105 180 90 180 60 165 30
+Line -7500403 false 120 30 180 30
+Polygon -7500403 true true 105 255 120 240 180 240 195 255 180 270 120 270
 
 ambulance
 false

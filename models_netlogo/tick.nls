@@ -181,3 +181,16 @@ end
 to update-hospitals
   ask hospitals [set label occupancy]
 end
+
+to fly-drones
+  repeat 3 [
+    ask drones [
+      face min-one-of crossings with [not spotted?] [distance myself]
+      forward drone-speed * 20 ;; This is 60 (seconds per minute) devided by the repeat 3
+      ask crossings in-radius drone-view-radius [
+        ask my-links with [color = blue] [set color red]
+        set spotted? true
+      ]
+    ]
+  ]
+end
