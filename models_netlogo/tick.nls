@@ -59,7 +59,7 @@ to go-ambulances
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
     if not enroute? [request-new-patient initial-ambulance-search-radius]
     if not full? and destination != nobody and member? destination crossings-here [pick-up-patient] 
-    if full? and member? destination hospitals-here [drop-off-patient]
+    if full? and destination != nobody and member? destination hospitals-here [drop-off-patient]
     if enroute? and route != false and length route >= 2 [move-ambulances]
     if enroute? and route = false [plan-route]
   ]
@@ -106,7 +106,7 @@ end
 to plan-route
   if destination != nobody [
     nw:set-context turtles with [part-of-network?] roads with [color != red]
-    ask one-of turtles-here with [part-of-network?] [
+    ask min-one-of turtles-here with [part-of-network?] [distance myself] [
       let potential-route nw:turtles-on-path-to [destination] of myself
       ask myself [set route potential-route]
     ]
@@ -145,7 +145,7 @@ end
 
 to find-hospital
   nw:set-context turtles with [part-of-network?] roads with [color != red]
-  let current-crossing one-of crossings-here
+  let current-crossing min-one-of crossings-here [distance myself]
   set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
   if destination = nobody [
     set route false
