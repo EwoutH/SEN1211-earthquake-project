@@ -101,8 +101,8 @@ to request-new-patient [increased-radius]
        ;; type self type " couldn't find patient, trying in radius " print new-radius
        request-new-patient new-radius]
       [if ticks > 100 [
-        set find-counter find-counter + 1
-        if find-counter > 5 [type "Couldn't find anyone, killing " print self die
+         set find-counter find-counter + 1
+         if find-counter > 5 [type "Couldn't find anyone, killing " print self die]
       ]
     ]
   ]
