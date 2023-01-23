@@ -188,6 +188,8 @@ end
 to operate-drones
   repeat 3 [
     ask drones [
+      if not any? crossings with [not spotted?] [die]
+
       ;; Charge if battery is not full and drone is at home, otherwise fly
       if battery > drone-range and member? base-hospital hospitals-here [set flying? true]
     
