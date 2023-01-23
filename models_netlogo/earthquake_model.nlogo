@@ -17,7 +17,7 @@ residents-own [health medical-treatment reported? help-underway? calling? tries-
 patches-own [earthquake-center?]
 ambulances-own [destination route full? patient enroute? find-counter]
 turtles-own [part-of-network?]
-drones-own [speed flying-range]
+drones-own [battery base-hospital flying?]
 
 globals [
   ;fun globals to track
@@ -66,7 +66,7 @@ end
 to go
   update-health
   call-112
-  fly-drones
+  operate-drones
   go-ambulances
   update-hospitals
   if not any? residents [stop]

@@ -145,11 +145,15 @@ end
 
 to init-drones
   create-drones amount-drones [
-    move-to one-of hospitals
+    set base-hospital one-of hospitals
+    move-to base-hospital
     set part-of-network? false
     set shape "airplane 2"
     set size 12
     set color cyan
+    set battery drone-range
+    set flying? false
+    
   ]
 end
 

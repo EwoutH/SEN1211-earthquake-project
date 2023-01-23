@@ -185,15 +185,39 @@ to update-hospitals
   ask hospitals [set label occupancy]
 end
 
-to fly-drones
+to operate-drones
   repeat 3 [
     ask drones [
-      face min-one-of crossings with [not spotted?] [distance myself]
-      forward drone-speed * 20 ;; This is 60 (seconds per minute) devided by the repeat 3
-      ask crossings in-radius drone-view-radius [
-        ask my-links with [color = blue] [set color red]
-        set spotted? true
+      ;; Charge if battery is not full and drone is at home, otherwise fly
+      if battery > drone-range and member? base-hospital hospitals-here [set flying? true]
+    
+      ifelse flying? [
+        ifelse battery >= 0.5 * drone-range [
+          ;; If battery is more than 50% full, fly to unspotted crossings
+          face min-one-of crossings with [not spotted?] [distance myself]
+          move-and-spot-broken-roads
+        ] [
+          ;; If battery is less then 50% full, fly home
+          face base-hospital
+          move-and-spot-broken-roads
+          if distance base-hospital <= drone-speed * 20 [
+            move-to base-hospital
+            set flying? false
+          ]
+        ]
+      ] [
+        ;; When not flying, charge the battery
+        set battery battery + 0.3333333 ;; 1 / 3
       ]
     ]
+  ]
+end
+
+to move-and-spot-broken-roads
+  forward drone-speed * 20 ;; This is 60 (seconds per minute) devided by the repeat 3
+  set battery battery - 0.3333333 ;; 1 / 3
+  ask crossings in-radius drone-view-radius [
+    ask my-links with [color = blue] [set color red]
+    set spotted? true
   ]
 end
