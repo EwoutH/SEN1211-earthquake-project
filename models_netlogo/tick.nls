@@ -101,11 +101,10 @@ to request-new-patient [increased-radius]
   ][
     ifelse increased-radius < 1900
       [let new-radius increased-radius * 1.5  ;; recursively increase the radius with 20% untill a patient is found
-       ;; type self type " couldn't find patient, trying in radius " print new-radius
        request-new-patient new-radius]
       [if ticks > 100 [
          set find-counter find-counter + 1
-         if find-counter > 5 [type "Couldn't find anyone, killing " print self die]
+         if find-counter > 5 [die]
       ]
     ]
   ]
@@ -145,7 +144,6 @@ to pick-up-patient
     plan-route
     set enroute? true
     set full? true
-    type self type " picked up " print patient
   ][
     request-new-patient initial-ambulance-search-radius
   ]
@@ -157,7 +155,6 @@ to find-hospital
   set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
   if destination = nobody [
     set route false
-    type self print "couldn't find hospital"
   ]
 end
 
@@ -167,9 +164,7 @@ to drop-off-patient ;; TODO: Implement what happens if resident died in the jour
     set destination nobody
     set full? false
     set enroute? false
-    type self print " dropped off dead patient"
   ][
-    type self type " dropped off " print patient
     ask patient [
       move-to [destination] of myself
       set medical-treatment "hospital"]
