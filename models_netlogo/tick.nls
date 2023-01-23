@@ -2,18 +2,23 @@
 
 to update-health
   ask residents [
-    set health health + table:get health-table medical-treatment
+    let threshhold table:get health-table medical-treatment
+    let difference health - threshhold
+    set health health + difference * 0.01
   ]
+
   ask residents with [health < 0][
     set deaths deaths + 1
     ;; TODO check if in ambulance, if so update ambulance
     die
   ]
   ask residents with [health > 1][
-    ifelse medical-treatment = "hospital" [
+    if medical-treatment = "hospital" [
       ask one-of hospitals-here [set occupancy occupancy - 1]
       if color = blue [set recovered-hospital recovered-hospital + 1]]
-    [set recovered-outside-hospital recovered-outside-hospital + 1]
+    ifelse medical-treatment = "none"
+      [set recovered-unchecked recovered-unchecked + 1]
+      [set recovered-with-help recovered-with-help + 1]
 
     die
   ]
@@ -124,20 +129,15 @@ end
 
 to pick-up-patient
   if patient != nobody [ask patient [set help-underway? false]]                      ;; Make the previously targetet patient available for help again, incase (s)he doesn't get picked up
-  set patient min-one-of residents-here with [medical-treatment != "ambulance-heavily-injured " and medical-treatment != "ambulance-lightly-injured" and medical-treatment != "hospital"] [health]   ;; Pick up the most injured patient
+  set patient min-one-of residents-here with [medical-treatment != "ambulance" and medical-treatment != "hospital"] [health]   ;; Pick up the most injured patient
   
-  ask residents-here with [medical-treatment = "none"]
-    [ifelse health >= 0.5 
-      [ set medical-treatment "checked-lightly-injured"]
-      [ set medical-treatment "checked-heavily-injured"]
-    ]
-  
+  ask residents-here with [medical-treatment = "none"] [
+    set medical-treatment "checked"
+  ]
 
   ifelse patient != nobody [
     ask patient [
-      ifelse health >= 0.5 
-         [set medical-treatment "ambulance-lightly-injured"]
-         [set medical-treatment "ambulance-heavily-injured"]
+      set medical-treatment "ambulance"
       set reported? true
     ]
     find-hospital

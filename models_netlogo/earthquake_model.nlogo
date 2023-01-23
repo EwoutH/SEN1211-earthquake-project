@@ -28,7 +28,8 @@ globals [
   max-earthquake-distance
   deaths      ;; not initialized, because 0 by default
   recovered-hospital   ;; idem dito
-  recovered-outside-hospital
+  recovered-unchecked
+  recovered-with-help
   health-table
 ]
 
@@ -149,42 +150,6 @@ Turn off \"videw updates\" to greatly increase model speed
 9.9
 1
 
-PLOT
-1550
-26
-2013
-292
-latst path node length
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot last_path_length_nodes"
-
-PLOT
-1549
-296
-2010
-607
-last path distance
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot last_path_length_distance"
-
 SLIDER
 8
 451
@@ -209,7 +174,7 @@ earthquake-magnitude
 earthquake-magnitude
 0
 1
-0.32
+0.4
 0.01
 1
 NIL
@@ -227,10 +192,10 @@ count residents
 11
 
 MONITOR
-219
-183
-330
-228
+221
+249
+332
+294
 Collapsed buildings
 count crossings with [building-status = \"collapsed\"]
 17
@@ -238,10 +203,10 @@ count crossings with [building-status = \"collapsed\"]
 11
 
 MONITOR
-218
-233
-329
-278
+220
+299
+331
+344
 Damaged buildings
 count crossings with [building-status = \"high-damage\"]
 17
@@ -257,7 +222,7 @@ amount-hospitals
 amount-hospitals
 1
 30
-5.0
+10.0
 1
 1
 NIL
@@ -287,7 +252,7 @@ amount-ambulances
 amount-ambulances
 1
 250
-10.0
+40.0
 1
 1
 NIL
@@ -317,17 +282,17 @@ collapsed-road-blocked-chance
 collapsed-road-blocked-chance
 0
 100
-30.0
+25.0
 1
 1
 %
 HORIZONTAL
 
 PLOT
-1549
-613
-2005
-802
+1554
+10
+2010
+199
 Recovered & deaths
 minutes
 residents
@@ -340,15 +305,16 @@ true
 "" ""
 PENS
 "Deaths" 1.0 0 -2674135 true "" "plot deaths"
-"Recovered Hospital" 1.0 0 -13840069 true "" "plot recovered-hospital"
+"Recovered in hospital" 1.0 0 -13840069 true "" "plot recovered-hospital"
 "Alive" 1.0 0 -13345367 true "" "plot count residents"
-"Recovered outside hospital" 1.0 0 -955883 true "" "plot recovered-outside-hospital"
+"Recovered checked or in ambulance" 1.0 0 -1184463 true "" "plot recovered-with-help"
+"Recovered by themselves" 1.0 0 -955883 true "" "plot recovered-unchecked"
 
 MONITOR
-217
-352
-332
-397
+219
+422
+334
+467
 NIL
 deaths
 17
@@ -397,10 +363,10 @@ probability-call-112
 HORIZONTAL
 
 PLOT
-1550
-814
-2007
-964
+1555
+211
+2012
+361
 % residents called in to 112
 minutes
 % called in
@@ -412,15 +378,15 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot (count residents with [reported?] + deaths + (recovered-hospital + recovered-outside-hospital)) / (count residents + deaths + (recovered-hospital + recovered-outside-hospital)) * 100"
+"default" 1.0 0 -16777216 true "" "plot (count residents with [reported?] + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) / (count residents + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) * 100"
 
 MONITOR
-217
-302
-333
-347
+219
+372
+335
+417
 % residents reported
-(count residents with [reported?] + deaths + (recovered-hospital + recovered-outside-hospital)) / (count residents + deaths + (recovered-hospital + recovered-outside-hospital)) * 100
+(count residents with [reported?] + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) / (count residents + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) * 100
 4
 1
 11
@@ -517,7 +483,7 @@ amount-drones
 amount-drones
 0
 25
-5.0
+10.0
 1
 1
 NIL
@@ -569,12 +535,12 @@ min
 HORIZONTAL
 
 MONITOR
-183
+220
 113
 331
 158
 NIL
-recovered-outside-hospital
+recovered-with-help
 17
 1
 11
@@ -593,6 +559,35 @@ ambulance-reroute-frequency
 1
 ticks
 HORIZONTAL
+
+MONITOR
+217
+167
+332
+212
+NIL
+recovered-unchecked
+17
+1
+11
+
+PLOT
+1555
+366
+2016
+556
+Histogram of health of agents
+NIL
+Health
+0.0
+1.0
+0.0
+1.0
+true
+false
+"set-plot-pen-interval 0.1" ""
+PENS
+"default" 0.1 1 -16777216 true "" "histogram [health] of residents"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -968,73 +963,6 @@ NetLogo 6.3.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
-<experiments>
-  <experiment name="experiment" repetitions="25" runMetricsEveryStep="false">
-    <setup>setup</setup>
-    <go>go</go>
-    <timeLimit steps="2000"/>
-    <metric>deaths</metric>
-    <metric>recovered-hospital</metric>
-    <metric>recovered-outside-hospital</metric>
-    <enumeratedValueSet variable="percentage-concrete-buildings">
-      <value value="70"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="amount-hospitals">
-      <value value="5"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="high-damage-road-blocked-chance">
-      <value value="10"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="drone-view-radius">
-      <value value="25"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="hospital-filling-percentage-t0">
-      <value value="60"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="verbose?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="drone-speed">
-      <value value="0.5"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="initial-ambulance-search-radius">
-      <value value="5"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="average-call-time">
-      <value value="2.5"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="call-limit?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="earthquake-magnitude">
-      <value value="0.32"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="hospital-capacity">
-      <value value="100"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="drone-range">
-      <value value="45"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="collapsed-road-blocked-chance">
-      <value value="30"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="max-concurrent-calls">
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="amount-drones">
-      <value value="5"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="probability-call-112">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="debug?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="amount-ambulances">
-      <value value="10"/>
-    </enumeratedValueSet>
-  </experiment>
-</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
