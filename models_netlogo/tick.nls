@@ -63,8 +63,8 @@ to go-ambulances
     if not enroute? [request-new-patient initial-ambulance-search-radius]
     if not full? and destination != nobody and member? destination crossings-here [pick-up-patient] 
     if full? and destination != nobody and member? destination hospitals-here [drop-off-patient]
+    if enroute? and (ticks mod ambulance-reroute-frequency = 0 or route = false) [plan-route]  ;; Plan new route if no route and every n ticks
     if enroute? and route != false and length route >= 2 [move-ambulances]
-    if enroute? and route = false [plan-route]
   ]
 end
 

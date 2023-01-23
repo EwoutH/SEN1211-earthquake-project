@@ -579,6 +579,21 @@ recovered-outside-hospital
 1
 11
 
+SLIDER
+23
+969
+264
+1002
+ambulance-reroute-frequency
+ambulance-reroute-frequency
+1
+100
+5.0
+1
+1
+ticks
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
