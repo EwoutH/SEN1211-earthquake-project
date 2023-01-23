@@ -33,7 +33,8 @@ globals [
 ]
 
 to setup
-  clear-network
+  clear-all
+  nw:load-graphml "data.graphml"
   init-hospital
   init-crossing
   ask roads [set color green]
@@ -45,24 +46,6 @@ to setup
   reset-ticks
 end
 
-to clear-network
-  clear-globals
-  clear-patches
-  clear-drawing
-  clear-all-plots
-  clear-output
-  ask residents [die]
-  ask ambulances [die]
-  ask drones [die]
-  ask hospitals [change-to-crossing]
-end
-
-to load-network
-  clear-all
-  nw:load-graphml "data.graphml"
-  setup
-end
-
 to go
   update-health
   call-112
@@ -71,21 +54,6 @@ to go
   update-hospitals
   if not any? residents [stop]
   tick
-end
-
-to change-to-crossing
-  set breed crossings
-  set label ""
-  set building-type 0
-  set building-height 0
-  set building-status 0
-  set total-residents 0
-  set injured-residents 0
-  set building-vulnerability 0
-  set earthquake-distance 0
-  set size 3
-  set shape "circle"
-  set color random 120
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -530,23 +498,6 @@ BUTTON
 90
 go 1 tick
 go 
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-77
-16
-150
-49
-NIL
-load-network
 NIL
 1
 T
@@ -1002,6 +953,73 @@ NetLogo 6.3.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="25" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="2000"/>
+    <metric>deaths</metric>
+    <metric>recovered-hospital</metric>
+    <metric>recovered-outside-hospital</metric>
+    <enumeratedValueSet variable="percentage-concrete-buildings">
+      <value value="70"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="amount-hospitals">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="high-damage-road-blocked-chance">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drone-view-radius">
+      <value value="25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hospital-filling-percentage-t0">
+      <value value="60"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="verbose?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drone-speed">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-ambulance-search-radius">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="average-call-time">
+      <value value="2.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="call-limit?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="earthquake-magnitude">
+      <value value="0.32"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hospital-capacity">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drone-range">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="collapsed-road-blocked-chance">
+      <value value="30"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-concurrent-calls">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="amount-drones">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="probability-call-112">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="debug?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="amount-ambulances">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
