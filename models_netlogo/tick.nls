@@ -9,7 +9,6 @@ to update-health
 
   ask residents with [health < 0][
     set deaths deaths + 1
-    ;; TODO check if in ambulance, if so update ambulance
     die
   ]
   ask residents with [health > 1][
@@ -19,7 +18,6 @@ to update-health
     ifelse medical-treatment = "none"
       [set recovered-unchecked recovered-unchecked + 1]
       [set recovered-with-help recovered-with-help + 1]
-
     die
   ]
 end
