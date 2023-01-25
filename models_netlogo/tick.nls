@@ -216,3 +216,9 @@ to move-and-spot-broken-roads
     set spotted? true
   ]
 end
+
+to update-stats
+  set number-destroyed-streets-spotted count links with [color = red]
+  set fraction-destroyed-streets-spotted number-destroyed-streets-spotted / number-destroyed-streets
+  set fraction-called-in (count residents with [reported?] + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) / (count residents + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked))
+end

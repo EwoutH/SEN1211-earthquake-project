@@ -75,6 +75,7 @@ to building-vulnerability-collapse
     if building-status = "collapsed" [ask my-links [if collapsed-road-blocked-chance / 100 >= random-float 1 [set color blue]]]
     if building-status = "high-damage" [ask my-links [if high-damage-road-blocked-chance / 100 >= random-float 1 [set color blue]]]
   ]
+  set number-destroyed-streets count links with [color = blue]
 end
 
 to init-injured-residents

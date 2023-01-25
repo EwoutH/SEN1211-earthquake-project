@@ -1,5 +1,3 @@
-;; IMPORTANT: Load "ambulance" shape from Shape Library
-
 __includes ["utilities.nls" "init.nls" "tick.nls"]
 extensions [ csv nw rnd table]
 
@@ -23,11 +21,17 @@ globals [
   earthquake-location
   min-earthquake-distance
   max-earthquake-distance
-  deaths      ;; not initialized, because 0 by default
-  recovered-hospital   ;; idem dito
+  health-table
+  number-destroyed-streets
+  number-destroyed-streets-spotted
+  fraction-called-in
+
+  ;; KPIs
+  deaths                ;; not initialized, because 0 by default
+  recovered-hospital    ;; idem dito
   recovered-unchecked
   recovered-with-help
-  health-table
+  fraction-destroyed-streets-spotted
 ]
 
 to setup
@@ -50,6 +54,7 @@ to go
   operate-drones
   go-ambulances
   update-hospitals
+  update-stats
   if not any? residents [stop]
   tick
 end
@@ -368,14 +373,14 @@ PLOT
 minutes
 % called in
 0.0
-10.0
+60.0
 0.0
-10.0
+100.0
 true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot (count residents with [reported?] + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) / (count residents + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) * 100"
+"default" 1.0 0 -16777216 true "" "plot fraction-called-in * 100"
 
 MONITOR
 219
@@ -383,7 +388,7 @@ MONITOR
 335
 417
 % residents reported
-(count residents with [reported?] + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) / (count residents + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) * 100
+fraction-called-in * 100
 4
 1
 11
@@ -570,9 +575,9 @@ recovered-unchecked
 
 PLOT
 1555
-366
+369
 2016
-556
+559
 Histogram of health of agents
 NIL
 Health
@@ -585,6 +590,57 @@ false
 "set-plot-pen-interval 0.1" ""
 PENS
 "default" 0.1 1 -16777216 true "" "histogram [health] of residents"
+
+MONITOR
+224
+524
+329
+569
+Destroyed streets
+number-destroyed-streets
+17
+1
+11
+
+MONITOR
+224
+577
+329
+622
+Spotted destroyed streets
+number-destroyed-streets-spotted
+17
+1
+11
+
+MONITOR
+223
+628
+330
+673
+% destroyed streets spotted
+fraction-destroyed-streets-spotted * 100
+4
+1
+11
+
+PLOT
+1557
+567
+2014
+717
+% destroyed streets spotted
+minutes
+NIL
+0.0
+60.0
+0.0
+100.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot fraction-destroyed-streets-spotted * 100"
 
 @#$#@#$#@
 ## Model description not available
