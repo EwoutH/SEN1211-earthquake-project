@@ -1,2 +1,0 @@
-Drones met fog of war
-Mobile coordination center die ambulances aanstuurt vs ambulances doen wat ze willen
