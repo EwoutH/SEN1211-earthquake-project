@@ -5,12 +5,35 @@ import pandas as pd
 
 os.environ["JAVA_HOME"] = 'C:/Program Files/NetLogo 6.3.0/runtime/bin/server/'
 
-replications = 3
-ticks = 30
-value_to_vary = "earthquake-magnitude"
+default_values = {
+    # variable-name: (number, rounded to int or not)
+    "call-limit?": (True, False),
+    "earthquake-magnitude": (0.4, False),
+    "amount-ambulances": (40, True),
+    "amount-drones": (10, True),
+    "probability-call-112": (1, False),
+    "amount-hospitals": (10, True),
+    "hospital-capacity": (100, True),
+    "hospital-filling-percentage-t0": (60, False),
+    "initial-ambulance-search-radius": (5, True),
+    "percentage-concrete-buildings": (70, False),
+    "high-damage-road-blocked-chance": (10, False),
+    "collapsed-road-blocked-chance": (25, False),
+    "max-concurrent-calls": (50, True),
+    "average-call-time": (2.5, False),
+    "amount-drones": (10, True),
+    "drone-speed": (0.5, False),
+    "drone-range": (45, False),
+    "ambulance-reroute-frequency": (5, True),
+}
+
+replications = 5
+ticks = 720
+value_to_vary = list(default_values.keys())[8]  # Change this one from 1 to 17 to quickly alter the value varried
 amount_to_vary = [0.8, 1.25]
-factor = True
-fixed_values = []
+
+factor = True      # Set false if you want to do custom values, and for the call-limit (True / False)
+fixed_values = []  # Put custom values here
 gui = False
 
 value_to_vary_name = value_to_vary.replace("?", "")  # File names can't contain question marks
@@ -31,27 +54,6 @@ single_reporters = [
     "number-destroyed-streets",
 ]
 
-default_values = {
-    "call-limit?": True,
-    "earthquake-magnitude": 0.4,
-    "amount-ambulances": 40,
-    "amount-drones": 10,
-    "probability-call-112": 1,
-    "amount-hospitals": 10,
-    "hospital-capacity": 100,
-    "hospital-filling-percentage-t0": 60,
-    "initial-ambulance-search-radius": 5,
-    "percentage-concrete-buildings": 70,
-    "high-damage-road-blocked-chance": 10,
-    "collapsed-road-blocked-chance": 25,
-    "max-concurrent-calls": 50,
-    "average-call-time": 2.5,
-    "amount-drones": 10,
-    "drone-speed": 0.5,
-    "drone-range": 45,
-    "ambulance-reroute-frequency": 5,
-}
-
 netlogo = pyNetLogo.NetLogoLink(gui=gui)
 netlogo.load_model("C:/Users/Ewout/Documents/GitHub/SEN1211-earthquake-project/models_netlogo/earthquake_model.nlogo")
 
@@ -59,9 +61,14 @@ single_data = {}
 series_data = {}
 
 if factor:
-    values = [round(default_values[value_to_vary] * v, 5) for v in amount_to_vary]
+    values = [round(default_values[value_to_vary][0] * v, 5) for v in amount_to_vary]
 else:
     values = fixed_values
+
+if default_values[value_to_vary][1]:
+    print(f"Rounding values to integers: {values}")
+    values = [int(v) for v in values]
+    print(f"Now rounded: {values}\n")
 
 runs = len(values) * replications
 print(f"Starting {len(values)} * {replications} = {runs} runs.")
