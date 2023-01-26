@@ -1,6 +1,5 @@
 import os
 import pyNetLogo
-import pickle
 import pandas as pd
 
 os.environ["JAVA_HOME"] = 'C:/Program Files/NetLogo 6.3.0/runtime/bin/server/'
@@ -21,15 +20,14 @@ default_values = {
     "collapsed-road-blocked-chance": (25, False),
     "max-concurrent-calls": (50, True),
     "average-call-time": (2.5, False),
-    "amount-drones": (10, True),
     "drone-speed": (0.5, False),
     "drone-range": (45, False),
     "ambulance-reroute-frequency": (5, True),
 }
 
-replications = 5
+replications = 25
 ticks = 720
-value_to_vary = list(default_values.keys())[8]  # Change this one from 1 to 17 to quickly alter the value varried
+value_to_vary = list(default_values.keys())[14]  # Change this one from 1 to 17 to quickly alter the value varried
 amount_to_vary = [0.8, 1.25]
 
 factor = True      # Set false if you want to do custom values, and for the call-limit (True / False)
