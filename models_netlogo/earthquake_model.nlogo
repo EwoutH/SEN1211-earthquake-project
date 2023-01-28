@@ -37,10 +37,9 @@ globals [
 to setup
   clear-all
   nw:load-graphml "data.graphml"
-  init-hospital
-  init-crossing
-  ask roads [set color green]
-  earthquake
+  init-hospital ;; Turns some crossings according to amount-hospitals into hospitals
+  init-crossing ;; The rest of the crossings will be buildings
+  earthquake ;; Earthquake happens
   init-injured-residents
   init-ambulances
   init-health-table
@@ -49,11 +48,11 @@ to setup
 end
 
 to go
-  update-health
-  call-112
-  operate-drones
-  go-ambulances
-  update-hospitals
+  update-health ;; First residents update their health
+  call-112 ;; Residents will call 112
+  operate-drones ;; Drones fly and report observed blocked roads
+  go-ambulances ;; Ambulances pick-up patients, drive and drop them off
+  update-hospitals ;; Update hospital occupancy label
   update-stats
   if not any? residents [stop]
   tick

@@ -2,19 +2,23 @@
 
 to update-health
   ask residents [
+    ;; The difference in health depends on the current health and the medical-treatment
+    ;; If current health is above the value in the health-table corresponding to his medical-treatment (treshhold), resident will heal
+    ;; If current health is under the value in the health-table corresponding to his medical-treatment (treshhold), resident will get increasingly more wounded
+    ;; The bigger the difference between threshhold and health, the bigger the change in health  
     let threshhold table:get health-table medical-treatment
     let difference health - threshhold
     set health health + difference * 0.01
   ]
 
   ask residents with [health < 0][
-    set deaths deaths + 1
+    set deaths deaths + 1 ;; Residents with health below 0 die
     die
   ]
-  ask residents with [health > 1][
+  ask residents with [health > 1][ ;; Residents with health > 1 are recovered
     if medical-treatment = "hospital" [
       ask one-of hospitals-here [set occupancy occupancy - 1]
-      if color = blue [set recovered-hospital recovered-hospital + 1]]
+      if color = blue [set recovered-hospital recovered-hospital + 1]] ;; Check if color is blue because only blue residents are wounded by earthquake, pink are only wounded at initialization
     ifelse medical-treatment = "none"
       [set recovered-unchecked recovered-unchecked + 1]
       [set recovered-with-help recovered-with-help + 1]

@@ -1,7 +1,7 @@
 ;; ##### INIT FUNCTIONS #####
 
 to init-hospital
-  ask n-of amount-hospitals crossings with [count link-neighbors >= 3]
+  ask n-of amount-hospitals crossings with [count link-neighbors >= 3] ;; Hospitals need at least 3 connected roads
   [set breed hospitals
    set shape "house"
    set color white
@@ -13,32 +13,33 @@ end
 
 to init-crossing
   ask crossings [
-    set part-of-network? true
-    set spotted? false
+    set part-of-network? true ;; Ambulances can drive over them, similar to hospitals
+    set spotted? false ;; For drone routing
     let randomizer random-float 1
-    ifelse randomizer > percentage-concrete-buildings / 100
+    ifelse randomizer > percentage-concrete-buildings / 100 ;; Makes sure that the correct percent of building is from brick/concrete
      [ set building-type 1 ]
      [ set building-type 0.5]
     let randomizer1 random-float 1
-    ifelse randomizer > 0.9
+    ifelse randomizer > 0.9 ;; 10% of Buildings are tall
      [set building-height 1 ]
-     [ ifelse randomizer > 0.6
+     [ ifelse randomizer > 0.6 ;; 30% of Buildings are medium-height
        [set building-height 0.6 ]
-       [set building-height 0.2 ]
+       [set building-height 0.2 ] ;; 60% of Buildings are small
      ]
 
-    ifelse building-height = 0.2
-    [ set total-residents random 5 + 1 ] ;;to-do maak de +1 +6 +11 beter
-    [ ifelse building-height = 0.6 ;;to-do fix aannamen aantal inwoners
-      [ set total-residents random 5 + 6 ]
-      [ set total-residents random 10 + 11 ]
+    ifelse building-height = 0.2 
+    [ set total-residents random 5 + 1 ] ;; Small building have 1-5 residents
+    [ ifelse building-height = 0.6 
+      [ set total-residents random 5 + 6 ] ;; Medium-height buildings have 5-10 residents
+      [ set total-residents random 10 + 11 ] ;; Tall buildings have 10-20 residents
     ]
   ]
 end
 
 to earthquake
-  set earthquake-location list random-pxcor random-pycor
-  ask crossings [
+  ask roads [set color green] ;; All roads are initialized as available
+  set earthquake-location list random-pxcor random-pycor ;; Earthquake at random location
+  ask crossings [ ;; Each crossing determines their distance to earthquake
     set earthquake-distance distancexy item 0 earthquake-location item 1 earthquake-location
   ]
   set min-earthquake-distance min [earthquake-distance] of crossings
@@ -46,12 +47,13 @@ to earthquake
 
   building-vulnerability-collapse
 
-  ask patches [
+  ask patches [ ;; Shades the patch color to earthquake location. Makes the earthquake location visible on the map
     set pcolor distancexy item 0 earthquake-location item 1 earthquake-location / (max-earthquake-distance / 5)
   ]
 end
 
 to building-vulnerability-collapse
+  ;; Calculates the building-vulnerability according to parameters, Checks how much damage there is
   ask crossings [
     ;; calculate relative distance and building vulnerability
     let epicenter-distance-multiplier (max-earthquake-distance - earthquake-distance) / (max-earthquake-distance - min-earthquake-distance)
@@ -71,7 +73,7 @@ to building-vulnerability-collapse
     if building-status = "high-damage" [set color orange set size 3]
     if building-status = "no-damage" [set color green set size 3]
 
-    ;; set color red
+    ;; Sets some roads (links) as blocked but not reported as blocked (blue color)
     if building-status = "collapsed" [ask my-links [if collapsed-road-blocked-chance / 100 >= random-float 1 [set color blue]]]
     if building-status = "high-damage" [ask my-links [if high-damage-road-blocked-chance / 100 >= random-float 1 [set color blue]]]
   ]
@@ -81,14 +83,14 @@ end
 to init-injured-residents
   ask crossings with [building-status ="collapsed"] [create-injured-residents 0.8 0.3]
   ask crossings with [building-status ="high-damage"] [create-injured-residents 0.95 0.3]
-  create-injured-residents-in-hospital
+  create-injured-residents-in-hospital ;; Creates the right amount of residents that are already injured before the earthquake happened
 end
 
 to create-injured-residents [avg std]
-  set injured-residents 0
+  set injured-residents 0 ;; Creates residents with health initialized due to normal distribution with avg and std
   foreach range total-residents
   [ let randomizer random-normal avg std
-    ifelse randomizer < 0
+    ifelse randomizer < 0 ;; If health is below 0, resident is already dead, will be removed before starting the first tick
       [set deaths deaths + 1 ]
       [if randomizer < 1 [
         hatch-residents 1 [
@@ -97,11 +99,11 @@ to create-injured-residents [avg std]
           set health randomizer
           set size 4
           set medical-treatment "none" ;; Possible: "none", "checked", "ambulance", "hospital"
-          set reported? false
-          set help-underway? false
-          set part-of-network? false
-          set calling? false
-          set tries-calling? false
+          set reported? false ;; Did not call 112 yet
+          set help-underway? false ;; No ambulance incoming yet
+          set part-of-network? false ;; Not connected to roads, ensures that embulances don't drive over them
+          set calling? false ;; If call-limit is in place, resident is not calling yet
+          set tries-calling? false ;; If call-limit is in place, resident is not trying to call yet
         ]
         set injured-residents injured-residents + 1
       ]
@@ -110,12 +112,12 @@ to create-injured-residents [avg std]
 end
 
 to create-injured-residents-in-hospital
-ask hospitals [
+ask hospitals [ 
     hatch-residents capacity * ( hospital-filling-percentage-t0 / 100 ) [
       set health random-float 1
       setxy xcor ycor
-      set color pink
-      set size 4
+      set color pink ;; Notice the color pink, ensures that they are not counted as recovered 
+      set size 4 ;; The reason for not counting them as recovered is that we want only to count recovered residents that were injured in earthquake
       set medical-treatment "hospital"
       set reported? true
       set help-underway? false
@@ -135,12 +137,12 @@ to init-ambulances
     set shape "ambulance"
     set size 12
     set color yellow
-    set enroute? false
-    set full? false
-    set patient nobody
-    set destination nobody
-    set route false
-    set part-of-network? false
+    set enroute? false ;; Not going anywhere yet
+    set full? false ;; No patient in ambulance yet
+    set patient nobody ;; No targeted patient yet
+    set destination nobody ;; No destination yet
+    set route false ;; Does not have crossings/hospital on the route yet
+    set part-of-network? false ;; Not connected to roads so other ambulances won't drive over this ambulance
   ]
 end
 
@@ -152,16 +154,16 @@ to init-drones
     set shape "airplane 2"
     set size 12
     set color cyan
-    set battery drone-range
+    set battery drone-range ;; Starts with a full battery
     set flying? false
     
   ]
 end
 
-to init-health-table
-  set health-table table:make
-  table:put health-table "none" 0.7
-  table:put health-table "checked" 0.4
-  table:put health-table "ambulance" 0.2
-  table:put health-table "hospital" 0.05
+to init-health-table ;; This is a kind of dictionary in Netlogo
+  set health-table table:make ;; Defines for what happens with health for which state
+  table:put health-table "none" 0.7 ;; At home, not checked by ambulance or transported by it
+  table:put health-table "checked" 0.4 ;; At home, checked by ambulance but not transported by it
+  table:put health-table "ambulance" 0.2 ;; In ambulance
+  table:put health-table "hospital" 0.05 ;; In hospital
 end
