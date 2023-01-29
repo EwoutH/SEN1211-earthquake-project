@@ -20,12 +20,13 @@ default_values = {
     "collapsed-road-blocked-chance": (25, False),
     "max-concurrent-calls": (50, True),
     "average-call-time": (2.5, False),
-    "drone-speed": (0.5, False),
+    "drone-speed": (0.5, False),  # This is multiplied by 10, so 0.5 is 5 m/s
     "drone-range": (45, False),
     "ambulance-reroute-frequency": (5, True),
+    "drone-view-radius": (25, False),  # This is multiplied by 10, so 25 is 250 meter
 }
 
-replications = 25
+replications = 10
 ticks = 720
 value_to_vary = list(default_values.keys())[14]  # Change this one from 1 to 17 to quickly alter the value varried
 amount_to_vary = [0.8, 1.25]
@@ -77,9 +78,11 @@ for v in values:
     series_data[v] = {}
 
     for i in range(replications):
+        # Change value to vary
+        netlogo.command(f"set {value_to_vary} {v}")
+
         # Setup model
         netlogo.command("setup")
-        netlogo.command(f"set {value_to_vary} {v}")
 
         # Record initial data and run
         single_data[v][i] = netlogo.report(single_reporters)

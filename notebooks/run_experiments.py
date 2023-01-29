@@ -20,22 +20,22 @@ default_values = {
     "max-concurrent-calls": 50,
     "average-call-time": 2.5,
     "amount-drones": 10,
-    "drone-speed": 0.5,
+    "drone-speed": 0.5,  # This is multiplied by 10, so 0.5 is 5 m/s
     "drone-range": 45,
     "ambulance-reroute-frequency": 5,
-    "drone-view-radius": 250,
+    "drone-view-radius": 25,  # This is multiplied by 10, so 25 is 250 meter
 }
 
-replications = 5
-ticks = 120
+replications = 25
+ticks = 720
 gui = False
 
-exp_nr = 2
+exp_nr = 0
 exp_names = ["no-drones", "short-range", "slow-reroute", "more-drones", "large-view", "fast-reroute", "many-long-range"]
 exp_name = f"{exp_nr}_{exp_names[exp_nr]}"
 exp = {
     "amount-drones": [0, 10, 10, 20, 20, 20, 40],
-    "drone-view-radius": [250, 250, 250, 250, 500, 500, 500],
+    "drone-view-radius": [25, 25, 25, 25, 50, 50, 50],
     "drone-range": [30, 30, 45, 45, 45, 45, 60],
     "ambulance-reroute-frequency": [10, 10, 10, 10, 10, 5, 5],
 }
@@ -68,10 +68,12 @@ for var, val in exp.items():
 print("")
 
 for i in range(replications):
-    # Setup model
-    netlogo.command("setup")
+    # Change sliders (global variables)
     for var, val in exp.items():
         netlogo.command(f"set {var} {val[exp_nr]}")
+
+    # Setup model
+    netlogo.command("setup")
 
     # Record initial data and run
     single_data[i] = netlogo.report(single_reporters)
@@ -101,4 +103,4 @@ sdf = sdf.T
 sdf.columns = single_reporters
 sdf.to_pickle(f"../results/experiments/exp_single_{exp_name}_{replications}r_df.pickle")
 
-print("Done. Results are saved in results/sensitivity.")
+print("Done. Results are saved in results/experiments.")
