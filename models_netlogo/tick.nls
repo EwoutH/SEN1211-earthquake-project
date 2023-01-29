@@ -30,23 +30,23 @@ to call-112
   ifelse call-limit? [
     ;; WITH a call-limit
     ask crossings
-    [ if any? residents-here with [not reported?]
+    [ if any? residents-here with [not reported?] ;; Only residents who did not already call 112
       [
         let randomizer random-float 1
-        if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents
+        if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents ;; Scales the probability to call with the amount of residents
         [ ask one-of residents-here [ set tries-calling? true] ] 
       ]
-    ]
-    let amount-callers count residents with [calling?]
+    ] ;; Line 40-44 make sure that as much people can call until the calling capacity is reached
+    let amount-callers count residents with [calling?] 
     ask up-to-n-of ( max-concurrent-calls - amount-callers ) residents with [tries-calling?] [
-      set calling? true
+      set calling? true 
       set tries-calling? false
-      set time-call random-poisson average-call-time  ;; TODO: Make Gamma-distribution
-    ]
+      set time-call random-poisson average-call-time  ;; Defines that a person calls 112 for x amount of minutes
+    ] ;; Makes sure that the call person calling 112 actually calls the correct amount of minutes
     ask residents with [calling?] [
       set time-call time-call - 1
       if time-call <= 0 [
-        ask residents-here [set reported? true]
+        ask residents-here [set reported? true] ;; The person calling 112 will set every resident in the same building as reported
         set calling? false
       ]
     ]
@@ -56,61 +56,61 @@ to call-112
     [ if any? residents-here with [not reported?]
       [
         let randomizer random-float 1
-        if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents
-        [ ask residents-here [ set reported? true ] ]
+        if randomizer <  1 - ( 1 - probability-call-112 / 100 ) ^ total-residents ;; Scales the probability to call with the amount of residents
+        [ ask residents-here [ set reported? true ] ] ;; The person calling 112 will set every resident in the same building as reported
       ]
     ]
   ]
 end
 
 to go-ambulances
-  nw:set-context turtles with [part-of-network?] roads with [color != red]
+  nw:set-context turtles with [part-of-network?] roads with [color != red] ;; Defines that ambulances can't include roads that are known as blocked in their route
   ask ambulances [
     ;; Check if a new patient needs to be requested, a patient can be picked up or if arrived at hospital
-    if not enroute? [request-new-patient initial-ambulance-search-radius]
-    if not full? and destination != nobody and member? destination crossings-here [pick-up-patient] 
-    if full? and destination != nobody and member? destination hospitals-here [drop-off-patient]
-    if enroute? and (ticks mod ambulance-reroute-frequency = 0 or route = false) [plan-route]  ;; Plan new route if no route and every n ticks
-    if enroute? and route != false and length route >= 2 [move-ambulances]
+    if not enroute? [request-new-patient initial-ambulance-search-radius] 
+    if not full? and destination != nobody and member? destination crossings-here [pick-up-patient] ;; If at building of target patient, pick him up
+    if full? and destination != nobody and member? destination hospitals-here [drop-off-patient] ;; If at hospital and transporting patient, drop him off at hospital
+    if enroute? and (ticks mod ambulance-reroute-frequency = 0 or route = false) [plan-route]  ;; Plan new route if no route possible or if route is possible but update route every n ticks
+    if enroute? and route != false and length route >= 2 [move-ambulances] 
   ]
 end
 
 to move-ambulances
-  let target-link road [who] of item 0 route [who] of item 1 route
-  let target-color [color] of target-link
-  ifelse target-color != blue and target-color != red [
+  let target-link road [who] of item 0 route [who] of item 1 route ;; route stores the route as crossing a, crossing b where a is the current crossing
+  let target-color [color] of target-link ;; and b is the crossing we want to go to
+  ifelse target-color != blue and target-color != red [ ;; We can only move over available (green) roads
     move-to item 1 route
     set route remove-item 0 route
-  ][
-    ask target-link [set color red]
-    plan-route
+  ][ ;; If road is not green, it is either blue (blocked but not reported as blocked) or red (reported as blocked)
+    ask target-link [set color red] 
+    plan-route ;; Plan a new route
     if route != false and length route >= 2 [move-ambulances] ;; Note the recursive use of this function in the "else" branch
   ]
 end
 
 to request-new-patient [increased-radius]
-  if not any? residents with [medical-treatment != "hospital"] [die]
+  if not any? residents with [medical-treatment != "hospital"] [die] ;; Die if there are no more patients we can pick up
   ;; Get resident with lowest health in search radius that is reported
   let target-patient nobody
-  ask one-of turtles-here with [part-of-network?] [
-    let potential-crossings nw:turtles-in-radius increased-radius
+  ask one-of turtles-here with [part-of-network?] [ ;; Officially only turtles which are connected to link can talk to other turtles in network. Thus ambulances can not. This fixes the issue 
+    let potential-crossings nw:turtles-in-radius increased-radius ;; Line below: search for nearby crossing which have residents that are reported to 112, not already in hospital, and not already target patient of other ambulance
     set potential-crossings potential-crossings with [any? residents-here with [reported? and medical-treatment != "hospital" and not help-underway?]]
-    let potential-patients residents-on potential-crossings
-    set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none" and not help-underway?] [health] ;;TODO think about checked
+    let potential-patients residents-on potential-crossings ;; Line below: choose the most injured resident as target patient
+    set target-patient min-one-of potential-patients with [reported? and medical-treatment = "none" and not help-underway?] [health] 
   ]
   set patient target-patient
 
-  ifelse patient != nobody [
-    set destination one-of crossings-on patient
+  ifelse patient != nobody [ 
+    set destination one-of crossings-on patient ;; If we could find a patient, plan a route to the patient
     ask patient [set help-underway? true]
     plan-route
     set enroute? true
-  ][
-    ifelse increased-radius < 1900
+  ][ ;; If we couldn't find a patient in the neighborhood
+    ifelse increased-radius < 1900 
       [let new-radius increased-radius * 1.5  ;; recursively increase the radius with 20% untill a patient is found
        request-new-patient new-radius]
-      [if ticks > 100 [
-         set find-counter find-counter + 1
+      [if ticks > 100 [ ;; If ambulance could not find a new patient in the whole map (1900 patches) and the ticks is higher than 100, there are probably unreachable patients, just kill this ambulance
+         set find-counter find-counter + 1 
          if find-counter > 5 [die]
       ]
     ]
@@ -119,14 +119,14 @@ end
 
 to plan-route
   if destination != nobody [
-    nw:set-context turtles with [part-of-network?] roads with [color != red]
-    ask min-one-of turtles-here with [part-of-network?] [distance myself] [
+    nw:set-context turtles with [part-of-network?] roads with [color != red] ;; Make a route that goes either over green or blue roads
+    ask min-one-of turtles-here with [part-of-network?] [distance myself] [ ;; Only the observer knows that ambulances can't travel over blue roads
       let potential-route nw:turtles-on-path-to [destination] of myself
-      ask myself [set route potential-route]
+      ask myself [set route potential-route] 
     ]
   ]
-  if route = false and not full? [request-new-patient initial-ambulance-search-radius]
-  if route = false and full? [find-hospital]
+  if route = false and not full? [request-new-patient initial-ambulance-search-radius] ;; If we targeted a patient for pick up, but that patient can't be reached, search a new patient
+  if route = false and full? [find-hospital] ;; If we targeted a hospital, but that hospital can't be reached, find a new hospital
 end
 
 to pick-up-patient
@@ -134,39 +134,39 @@ to pick-up-patient
   set patient min-one-of residents-here with [medical-treatment != "ambulance" and medical-treatment != "hospital"] [health]   ;; Pick up the most injured patient
   
   ask residents-here with [medical-treatment = "none"] [
-    set medical-treatment "checked"
+    set medical-treatment "checked" ;; Check everyone in the building
   ]
 
-  ifelse patient != nobody [
-    ask patient [
+  ifelse patient != nobody [ 
+    ask patient [ ;; Pick up the patient
       set medical-treatment "ambulance"
       set reported? true
     ]
-    find-hospital
+    find-hospital ;; Find a route to the hospital
     plan-route
     set enroute? true
     set full? true
   ][
-    request-new-patient initial-ambulance-search-radius
+    request-new-patient initial-ambulance-search-radius ;; Seach for a new target patient, this generally happens if a there are no residents at arrival (taken by other ambulance or residents died)
   ]
 end
 
 to find-hospital
-  nw:set-context turtles with [part-of-network?] roads with [color != red]
-  let current-crossing min-one-of crossings-here [distance myself]
-  set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing]
+  nw:set-context turtles with [part-of-network?] roads with [color != red] ;; Make a route that goes either over green or blue roads
+  let current-crossing min-one-of crossings-here [distance myself] ;; Only the observer knows that ambulances can't travel over blue roads
+  set destination min-one-of hospitals with [capacity > occupancy] [nw:distance-to current-crossing] ;; Only travel to hospitals that are not full yet
   if destination = nobody [
     set route false
   ]
 end
 
-to drop-off-patient ;; TODO: Implement what happens if resident died in the journey
+to drop-off-patient 
   ifelse patient = nobody
-  [
+  [ ;; Patient died during driving to hospital, ambulance will soon start to search for a new target patient
     set destination nobody
     set full? false
     set enroute? false
-  ][
+  ][ ;; Drop patient off at hospital
     ask patient [
       move-to [destination] of myself
       set medical-treatment "hospital"]
@@ -178,21 +178,20 @@ to drop-off-patient ;; TODO: Implement what happens if resident died in the jour
   ]
 end
 
-to update-hospitals
+to update-hospitals ;; Visualise the occupancy of the hospital
   ask hospitals [set label occupancy]
 end
 
 to operate-drones
-  repeat 3 [
+  repeat 3 [ ;; Smoothing, otherwise the drones will make make too large movements
     ask drones [
-      if not any? crossings with [not spotted?] [die]
+      if not any? crossings with [not spotted?] [die] ;; Die if there are no roads left that are not spotted (as available or unavailable)
 
       ;; Charge if battery is not full and drone is at home, otherwise fly
       if battery > drone-range and member? base-hospital hospitals-here [set flying? true]
     
       ifelse flying? [
-        ifelse battery >= 0.5 * drone-range [
-          ;; If battery is more than 50% full, fly to unspotted crossings
+        ifelse battery >= 0.5 * drone-range [ ;; If battery is more than 50% full, fly to unspotted crossings
           face min-one-of crossings with [not spotted?] [distance myself]
           move-and-spot-broken-roads
         ] [
@@ -221,7 +220,7 @@ to move-and-spot-broken-roads
   ]
 end
 
-to update-stats
+to update-stats ;; Updates some statistics
   set number-destroyed-streets-spotted count links with [color = red]
   set fraction-destroyed-streets-spotted number-destroyed-streets-spotted / number-destroyed-streets
   set fraction-called-in (count residents with [reported?] + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked)) / (count residents + deaths + (recovered-hospital + recovered-with-help + recovered-unchecked))
