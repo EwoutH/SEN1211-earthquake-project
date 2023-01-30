@@ -1,0 +1,2 @@
+In deze map moeten het verslag, het model en de python notebooks+pickles
+komen (liefst met die van pynetlogo erbij). Dan kan het daarna gezipt worden
