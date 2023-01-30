@@ -1,0 +1,8 @@
+,amount-drones,drone-view-radius,drone-range,ambulance-reroute-frequency
+0_no-drones,0,25,30,10
+1_short-range,10,25,30,10
+2_slow-reroute,10,25,45,10
+3_more-drones,20,25,45,10
+4_large-view,20,50,45,10
+5_fast-reroute,20,50,45,5
+6_many-long-range,40,50,60,5
